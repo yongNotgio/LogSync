@@ -94,8 +94,9 @@ export default defineSchema({
         end: v.string(), // "09:30" format
 
         // Content
-        task: v.string(), // Short title
-        description: v.string(), // AI-generated description
+        task: v.string(), // Short title (ACTIVITIES/TASKS)
+        description: v.string(), // Brief commit summary
+        learning: v.optional(v.string()), // LEARNING - discuss procedure performed
         category: v.string(), // development, meeting, review, etc.
 
         // Source tracking

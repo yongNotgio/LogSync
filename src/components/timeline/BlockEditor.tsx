@@ -26,6 +26,7 @@ const CATEGORIES: BlockCategory[] = [
 export function BlockEditor({ block, onSave, onDelete, onClose }: BlockEditorProps) {
   const [task, setTask] = useState(block.task);
   const [description, setDescription] = useState(block.description);
+  const [learning, setLearning] = useState(block.learning || "");
   const [category, setCategory] = useState<BlockCategory>(block.category);
   const [start, setStart] = useState(block.start);
   const [end, setEnd] = useState(block.end);
@@ -51,6 +52,7 @@ export function BlockEditor({ block, onSave, onDelete, onClose }: BlockEditorPro
     onSave({
       task: task.trim(),
       description: description.trim(),
+      learning: learning.trim(),
       category,
       start,
       end,
@@ -148,16 +150,31 @@ export function BlockEditor({ block, onSave, onDelete, onClose }: BlockEditorPro
 
           {/* Description */}
           <div>
-            <label className="label">Description</label>
+            <label className="label">Activities/Tasks Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="input min-h-[100px] resize-none"
-              placeholder="Professional description of the work..."
-              maxLength={1000}
+              className="input min-h-[80px] resize-none"
+              placeholder="What was accomplished..."
+              maxLength={500}
             />
             <div className="text-xs text-gray-400 mt-1 text-right">
-              {description.length}/1000
+              {description.length}/500
+            </div>
+          </div>
+
+          {/* Learning */}
+          <div>
+            <label className="label">Learning (Procedure Performed)</label>
+            <textarea
+              value={learning}
+              onChange={(e) => setLearning(e.target.value)}
+              className="input min-h-[80px] resize-none"
+              placeholder="Discuss the procedure performed and what was learned..."
+              maxLength={500}
+            />
+            <div className="text-xs text-gray-400 mt-1 text-right">
+              {learning.length}/500
             </div>
           </div>
 

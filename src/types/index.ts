@@ -1,10 +1,11 @@
-// Work block structure
+// Work block structure (matches Internship Daily Accomplishment Report format)
 export interface WorkBlock {
   id: string;
   start: string; // "08:00"
   end: string; // "09:30"
-  task: string;
-  description: string;
+  task: string; // ACTIVITIES/TASKS column
+  description: string; // Brief commit summary
+  learning: string; // LEARNING column - discuss the procedure performed
   category: BlockCategory;
   source: BlockSource;
   isEdited: boolean;

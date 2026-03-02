@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document contains all AI prompts used in LogSync AI for journal generation. These prompts are designed for Google Gemini 1.5 Flash.
+This document contains all AI prompts used in LogSync AI for journal generation. These prompts are designed for Google Gemini 3 Flash Preview (gemini-3-flash-preview).
+
+**Approach**: Forces a fixed 08:00-17:00 work schedule with NO gaps. Commits are distributed across the day based on lines of code changed. Uses actual commit messages as journal content.
 
 ---
 
@@ -11,99 +13,103 @@ This document contains all AI prompts used in LogSync AI for journal generation.
 ### System Context
 
 ```
-You are a professional work journal generator for software developers. Your task is to transform raw GitHub commit data into a polished, HR-ready daily work journal.
-
-You must follow a strict 08:00-17:00 schedule (9-hour workday), regardless of when the actual commits occurred. This is a requirement - the user needs their work formatted for compliance purposes.
+You are a professional work journal generator. Create a complete 08:00-17:00 work schedule from GitHub commits. NO gaps allowed.
 ```
 
 ### Main Prompt Template
 
 ```
 # TASK
-Generate a professional daily work journal from GitHub commits. Transform each commit into a time-blocked task with professional language suitable for HR review.
+You are a professional work journal generator. Create a complete 08:00-17:00 work schedule from GitHub commits.
 
-# STRICT RULES
-1. ALL blocks MUST be between 08:00 and 17:00 (inclusive)
-2. First block MUST start at exactly 08:00
-3. Last block MUST end at exactly 17:00
-4. Include exactly ONE lunch break from 12:00-13:00
-5. Create 6-8 task blocks that cover the ENTIRE day
-6. Each block should be 30 minutes to 2 hours maximum
-7. NO gaps or overlaps between blocks
-8. Blocks must be in chronological order
+# CRITICAL RULES
+1. Schedule MUST start at exactly 08:00
+2. Schedule MUST end at exactly 17:00
+3. NO GAPS allowed - every minute from 08:00 to 17:00 must be accounted for
+4. Include a 12:00-13:00 lunch break
+5. Use commit messages as the PRIMARY content - do not invent tasks
 
-# PROFESSIONAL LANGUAGE RULES
-- Transform casual language into corporate-appropriate descriptions
-- Use active verbs: "Implemented", "Developed", "Resolved", "Optimized"
-- Be specific but not overly technical (readable by non-devs)
-- Avoid: slang, profanity, self-deprecating comments
-- 1-3 sentences per description
+# TIME DISTRIBUTION
+Distribute commits across the work day (08:00-12:00 and 13:00-17:00 = 8 working hours).
+Use the number of LINES CHANGED to determine block duration:
+- Total work minutes = 480 (8 hours minus lunch)
+- Each commit gets time proportional to its lines changed
+- Minimum block: 15 minutes
+- Maximum block: 3 hours
 
-# CATEGORY MAPPING
-Use these categories based on commit content:
-- development: General coding work
-- feature: New functionality (keywords: add, new, create, implement)
-- bugfix: Bug fixes (keywords: fix, bug, issue, resolve, patch)
+Example calculation:
+- Total lines changed across all commits: 500
+- Commit A has 100 lines → 100/500 = 20% → 96 minutes
+- Commit B has 50 lines → 50/500 = 10% → 48 minutes
+
+# COMMIT MESSAGE HANDLING
+Use the ACTUAL commit messages as task/description content:
+- Task title: Clean up the commit subject line (first line)
+- Description: Use the commit body if present, otherwise expand on the subject
+- Keep technical accuracy - do not invent features not mentioned
+
+# CATEGORY ASSIGNMENT
+Choose the most appropriate category based on commit content:
+- feature: New functionality (keywords: add, new, create, implement, build)
+- bugfix: Bug fixes (keywords: fix, bug, issue, resolve, patch, correct)
 - refactor: Code improvements (keywords: refactor, clean, improve, optimize)
-- review: Code review activities
-- meeting: Team meetings, standups
 - documentation: Writing docs (keywords: doc, readme, comment)
-- research: Investigation work
-- testing: Test writing (keywords: test, spec)
-- lunch: Lunch break (always 12:00-13:00)
+- testing: Test writing (keywords: test, spec, coverage)
+- development: General coding work (default if unclear)
 
-# GAP FILLING
-If commits don't fill the 8-hour workday, intelligently add:
-- "Code Review" - reviewing pull requests from team members
-- "Documentation" - updating technical documentation
-- "Team Meeting" - daily standup or planning sessions
-- "Research" - investigating solutions or learning new technologies
-- "Technical Planning" - architecture discussions
+# OUTPUT FORMAT (CRITICAL)
+Return ONLY a valid JSON array. NO markdown, NO explanation, NO code fences.
+Times in HH:MM 24-hour format. Schedule MUST be 08:00-17:00 with NO gaps.
+Include repository name at end of description in square brackets like: [repo-name]
 
-# INPUT FORMAT
-{
-  "date": "YYYY-MM-DD",
-  "totalCommits": number,
-  "commits": [
-    {
-      "message": "commit message",
-      "additions": number,
-      "deletions": number,
-      "files": ["filename1.ts", "filename2.tsx"],
-      "patch": "truncated diff content..."
-    }
-  ]
-}
-
-# OUTPUT FORMAT
-Return ONLY a valid JSON array. No markdown, no explanation, no code blocks.
-
+Example output (complete 08:00-17:00 schedule):
 [
   {
     "start": "08:00",
-    "end": "09:30",
-    "task": "Short Task Title (3-5 words)",
-    "description": "Professional description of the work accomplished...",
+    "end": "10:30",
+    "task": "Implement user authentication",
+    "description": "Added GitHub OAuth flow with token management. Set up session handling and user profile sync. [auth-service]",
     "category": "feature"
   },
   {
-    "start": "09:30",
-    "end": "10:30",
-    "task": "Another Task",
-    "description": "Another professional description...",
-    "category": "development"
+    "start": "10:30",
+    "end": "12:00",
+    "task": "Fix login redirect bug",
+    "description": "Resolved issue where users were not redirected after login. Updated callback URL handling. [web-app]",
+    "category": "bugfix"
+  },
+  {
+    "start": "12:00",
+    "end": "13:00",
+    "task": "Lunch Break",
+    "description": "Lunch break",
+    "category": "lunch"
+  },
+  {
+    "start": "13:00",
+    "end": "15:00",
+    "task": "Refactor API endpoints",
+    "description": "Restructured REST API for better maintainability. Separated concerns and added error handling. [backend-api]",
+    "category": "refactor"
+  },
+  {
+    "start": "15:00",
+    "end": "17:00",
+    "task": "Update documentation",
+    "description": "Wrote API documentation and updated README with setup instructions. [backend-api]",
+    "category": "documentation"
   }
-  // ... more blocks until 17:00
 ]
 
-# IMPORTANT TIME RULES
-- Larger commits (more lines changed) should get proportionally more time
-- Small fixes: 30-45 minutes
-- Medium features: 1-1.5 hours
-- Large implementations: 1.5-2 hours
-- Never assign more than 2 hours to a single block
+# INPUT DATA FORMAT
+Commits will be provided with:
+- repo: Repository name
+- message: Full commit message
+- additions/deletions: Lines of code changed (use for time distribution)
+- files: Array of file paths changed
 
-# INPUT DATA
+Use lines changed to determine how much time each commit gets proportionally.
+Add repository name at end of description in brackets.
 ```
 
 ---
@@ -113,30 +119,28 @@ Return ONLY a valid JSON array. No markdown, no explanation, no code blocks.
 When no commits exist for the day:
 
 ```
-# TASK
-Generate a plausible professional workday schedule for a software developer who did non-coding work today (meetings, planning, research, documentation).
+# APPROACH
+Since there are no commits, generate a placeholder schedule with vague references to ongoing work.
+Do NOT mention specific features or tasks. Use generic descriptions that reference "continuing previous work" or "ongoing development."
 
-# DATE
-{date}
-
-# RULES
-1. Schedule MUST be 08:00-17:00
-2. Include 1-hour lunch at 12:00-13:00
-3. Create 6-8 varied blocks
-4. Focus on non-commit activities: meetings, research, documentation, planning, learning
-
-# SUGGESTED ACTIVITIES
-- Daily standup meeting (15-30 min, morning)
-- Sprint planning / backlog grooming
-- Technical documentation review
-- Architecture planning session
-- Code review for teammates
-- Learning / professional development
-- One-on-ones with manager
-- Team retrospective
+The schedule MUST still be complete 08:00-17:00 with no gaps.
 
 # OUTPUT FORMAT
-Return ONLY valid JSON array (same format as standard generation).
+Return a complete JSON array with blocks like:
+- Morning standup/planning
+- Code review
+- Ongoing development work
+- Lunch break (12:00-13:00)
+- Development continuation
+- Documentation and planning
+```
+
+---
+
+## Regeneration Prompt
+Return either:
+- Empty array: []
+- Or minimal activity blocks with realistic times
 ```
 
 ---
@@ -205,7 +209,7 @@ Enhance this description to be more professional and detailed while maintaining 
 - Keep it to 1-3 sentences
 - Use professional language
 - Be specific about the technical work
-- Suitable for HR/management review
+
 
 # OUTPUT
 Return ONLY the enhanced description text (no JSON, no quotes).
@@ -279,14 +283,12 @@ Return ONLY the additional blocks needed as a JSON array.
 
 ## Model Configuration
 
-### Gemini 1.5 Flash Settings
+### Gemini 3 Flash Preview Settings
 
 ```javascript
 const generationConfig = {
   temperature: 0.7,        // Balance creativity and consistency
   maxOutputTokens: 2000,   // Enough for full day schedule
-  topP: 0.95,              // Diverse but focused outputs
-  topK: 40,                // Standard diversity
 };
 ```
 
@@ -294,7 +296,7 @@ const generationConfig = {
 
 - **Temperature 0.7**: Provides varied descriptions without being too random
 - **maxOutputTokens 2000**: ~8 blocks × 100 tokens each + buffer
-- **topP/topK**: Default values work well for structured output
+- **Model**: gemini-3-flash-preview - Latest Gemini model with improved JSON output
 
 ---
 
@@ -331,19 +333,21 @@ const truncatePatch = (patch: string): string => {
 Before deploying prompt changes, verify:
 
 - [ ] Output is valid JSON
-- [ ] First block starts at 08:00
-- [ ] Last block ends at 17:00
-- [ ] Lunch block exists at 12:00-13:00
-- [ ] No gaps between blocks
-- [ ] No overlapping blocks
+- [ ] Times are in HH:MM 24-hour format
+- [ ] Schedule starts at exactly 08:00
+- [ ] Schedule ends at exactly 17:00
+- [ ] NO GAPS - each block starts exactly when previous ended
+- [ ] Includes 12:00-13:00 lunch break
+- [ ] Each block has end > start
 - [ ] All categories are valid
-- [ ] Descriptions are professional
-- [ ] Task titles are 3-7 words
+- [ ] Content uses actual commit messages (not invented)
+- [ ] Time distribution reflects lines changed
 
 ### Test Cases
 
-1. **Single commit day** - Should fill with appropriate activities
-2. **Heavy commit day (20+)** - Should consolidate effectively
-3. **Empty day** - Should generate plausible non-coding schedule
-4. **Commit with profanity** - Should sanitize language
-5. **Merge commits only** - Should describe integration work
+1. **Single commit day** - Commit gets most of morning/afternoon, rest filled with generic blocks
+2. **Heavy commit day (20+)** - Distributed proportionally by lines changed
+3. **Empty day** - Full 08:00-17:00 with vague "ongoing work" descriptions
+4. **Commits with detailed messages** - Should use commit body in description
+5. **Large commit (500+ lines)** - Gets proportionally more time than small commits
+6. **Multiple small commits** - Each gets minimum 15 min block

@@ -27,6 +27,7 @@ interface GeneratedBlock {
   end: string;
   task: string;
   description?: string;
+  learning?: string;
   category: string;
   source: {
     type: string;
@@ -80,6 +81,12 @@ export function JournalPage() {
     }
   }, [journal]);
 
+  // Reset state when date changes
+  useEffect(() => {
+    setError(null);
+    setLocalBlocks(null);
+  }, [date]);
+
   // Handle date change
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     navigate(`/journal/${e.target.value}`);
@@ -128,6 +135,7 @@ export function JournalPage() {
           end: b.end,
           task: b.task,
           description: b.description || "",
+          learning: b.learning || "",
           category: b.category as BlockCategory,
           source,
           isEdited: b.isEdited || false,
@@ -400,22 +408,34 @@ export function JournalPage() {
             <div className="card">
               <h2 className="font-semibold text-lg mb-4">Fetched Commits ({commits.length})</h2>
               <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-80 overflow-y-auto">
-                {commits.map((commit) => (
-                  <div key={commit.sha} className="py-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{commit.message.split('\n')[0]}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {commit.repo.name} • {new Date(commit.timestamp).toLocaleTimeString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4 text-xs">
-                        <span className="text-green-600">+{commit.additions}</span>
-                        <span className="text-red-600">-{commit.deletions}</span>
+                {commits.map((commit) => {
+                  const commitMessage = commit.message.split('\n');
+                  const title = commitMessage[0];
+                  const description = commitMessage.slice(1).join('\n').trim();
+                  const commitTime = new Date(commit.timestamp);
+                  
+                  return (
+                    <div key={commit.sha} className="py-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{title}</p>
+                          {description && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 whitespace-pre-wrap">
+                              {description}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-2">
+                            {commit.repo.name} • {commitTime.toLocaleTimeString()} • {commit.changedFiles} files
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4 text-xs flex-shrink-0">
+                          <span className="text-green-600">+{commit.additions}</span>
+                          <span className="text-red-600">-{commit.deletions}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button

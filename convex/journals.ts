@@ -1,13 +1,14 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-// Block schema for validation
+// Block schema for validation (matches Internship Daily Accomplishment Report)
 const blockSchema = v.object({
   id: v.string(),
   start: v.string(),
   end: v.string(),
-  task: v.string(),
-  description: v.string(),
+  task: v.string(), // ACTIVITIES/TASKS
+  description: v.string(), // Brief summary
+  learning: v.optional(v.string()), // LEARNING - procedures performed
   category: v.string(),
   source: v.union(
     v.object({
@@ -49,7 +50,7 @@ export const listJournals = query({
     status: v.optional(v.union(v.literal("draft"), v.literal("finalized"))),
   },
   handler: async (ctx, { userId, limit = 30, status }) => {
-    let q = ctx.db
+    const q = ctx.db
       .query("journals")
       .withIndex("by_user_date", (q) => q.eq("userId", userId));
 

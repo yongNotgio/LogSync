@@ -20,8 +20,8 @@ export function Timeline({
     return Array.from({ length: 10 }, (_, i) => 8 + i);
   }, []);
 
-  // Calculate the height of the timeline (each hour = 80px)
-  const HOUR_HEIGHT = 80;
+  // Calculate the height of the timeline (each hour = 120px for better readability)
+  const HOUR_HEIGHT = 120;
   const timelineHeight = 9 * HOUR_HEIGHT; // 9 hours (8-17)
 
   return (

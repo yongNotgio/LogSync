@@ -24,7 +24,7 @@ export function TimeBlock({
   const startMinutes = timeToMinutes(block.start) - 480; // 480 = 08:00
   const duration = timeToMinutes(block.end) - timeToMinutes(block.start);
   const top = (startMinutes / 60) * hourHeight;
-  const height = Math.max((duration / 60) * hourHeight - 4, 30); // Min height 30px, 4px gap
+  const height = Math.max((duration / 60) * hourHeight - 4, 50); // Min height 50px for content, 4px gap
 
   // Get category color
   const categoryColor = CATEGORY_COLORS[block.category as BlockCategory] || "bg-gray-500";
@@ -82,9 +82,16 @@ export function TimeBlock({
             <div className="block-time">
               {block.start} - {block.end} ({formatDuration(block.start, block.end)})
             </div>
-            <div className="block-task truncate">{block.task}</div>
-            {height > 60 && (
-              <div className="block-description">{block.description}</div>
+            <div className="block-task">{block.task}</div>
+            {height > 50 && (
+              <div className="block-description text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {block.description}
+              </div>
+            )}
+            {height > 100 && block.learning && (
+              <div className="block-learning text-xs text-gray-500 dark:text-gray-500 mt-2 italic border-t border-gray-200 dark:border-gray-700 pt-2">
+                <span className="font-semibold not-italic">Learning:</span> {block.learning}
+              </div>
             )}
           </div>
         </div>

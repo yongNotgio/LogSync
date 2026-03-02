@@ -5,7 +5,7 @@ import type { Doc } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/common/Loading";
 import { getTodayString, formatDate, formatShortDate } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Journal = Doc<"journals">;
 
@@ -25,13 +25,14 @@ export function Dashboard() {
   const { isAuthenticated, isLoading: authLoading, userId, user } = useAuth();
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(getTodayString());
 
   const today = getTodayString();
 
-  // Get cached commits from database (reactive)
+  // Get cached commits from database (reactive) - use selectedDate
   const cachedCommits = useQuery(
     api.commits.getCommits,
-    userId ? { userId, date: today } : "skip"
+    userId ? { userId, date: selectedDate } : "skip"
   ) as FetchedCommit[] | undefined;
 
   // Get recent journals
@@ -40,14 +41,19 @@ export function Dashboard() {
     userId ? { userId, limit: 5 } : "skip"
   );
 
-  // Get today's journal
-  const todayJournal = useQuery(
+  // Get journal for selected date
+  const selectedJournal = useQuery(
     api.journals.getJournal,
-    userId ? { userId, date: today } : "skip"
+    userId ? { userId, date: selectedDate } : "skip"
   );
 
   // Actions
   const fetchCommits = useAction(api.commits.fetchCommitsForDate);
+
+  // Reset error when date changes
+  useEffect(() => {
+    setFetchError(null);
+  }, [selectedDate]);
 
   if (authLoading) {
     return <LoadingScreen message="Loading..." />;
@@ -74,8 +80,8 @@ export function Dashboard() {
     setIsFetching(true);
     setFetchError(null);
     try {
-      console.log("Fetching commits for:", today);
-      const result = await fetchCommits({ userId, date: today });
+      console.log("Fetching commits for:", selectedDate);
+      const result = await fetchCommits({ userId, date: selectedDate });
       console.log("Fetch commits result:", result);
       // No need to set state - cachedCommits query will automatically update
     } catch (err) {
@@ -90,44 +96,59 @@ export function Dashboard() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">
-          Welcome back, {user?.username}! 👋
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {formatDate(today)}
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">
+              Welcome back, {user?.username}! 👋
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              {formatDate(selectedDate)}
+            </p>
+          </div>
+          
+          {/* Date picker */}
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            max={getTodayString()}
+            className="input w-auto"
+          />
+        </div>
       </div>
 
       {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-        {/* Today's Journal Card */}
+        {/* Selected Date's Journal Card */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-lg">Today's Journal</h2>
-            {todayJournal?.status === "finalized" && (
+            <h2 className="font-semibold text-lg">
+              {selectedDate === today ? "Today's Journal" : "Journal"}
+            </h2>
+            {selectedJournal?.status === "finalized" && (
               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400">
                 Finalized
               </span>
             )}
-            {todayJournal?.status === "draft" && (
+            {selectedJournal?.status === "draft" && (
               <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full dark:bg-yellow-900/30 dark:text-yellow-400">
                 Draft
               </span>
             )}
           </div>
 
-          {todayJournal ? (
+          {selectedJournal ? (
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Blocks</span>
-                <span className="font-medium">{todayJournal.blocks.length}</span>
+                <span className="font-medium">{selectedJournal.blocks.length}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Commits</span>
-                <span className="font-medium">{todayJournal.totalCommits}</span>
+                <span className="font-medium">{selectedJournal.totalCommits}</span>
               </div>
               <Link
-                to={`/journal/${today}`}
+                to={`/journal/${selectedDate}`}
                 className="btn-primary w-full mt-4"
               >
                 View Journal
@@ -136,20 +157,20 @@ export function Dashboard() {
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-gray-500">
-                No journal for today yet. Start by fetching your commits.
+                No journal for this date yet. Start by fetching commits.
               </p>
               <button
                 onClick={handleFetchCommits}
                 disabled={isFetching}
                 className="btn-secondary w-full"
               >
-                {isFetching ? "Fetching..." : "Fetch Today's Commits"}
+                {isFetching ? "Fetching..." : "Fetch Commits"}
               </button>
               {fetchError && (
                 <p className="text-sm text-red-600">{fetchError}</p>
               )}
               <Link
-                to={`/journal/${today}`}
+                to={`/journal/${selectedDate}`}
                 className="btn-primary w-full"
               >
                 Generate Journal
@@ -201,40 +222,49 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Debug: Show commits state */}
-      <div className="card mb-4 bg-gray-100 dark:bg-gray-800">
-        <p className="text-sm text-gray-500">Debug: cachedCommits = {cachedCommits === undefined ? "loading..." : `array(${cachedCommits.length})`}</p>
-      </div>
-
       {/* Fetched Commits Section */}
       {cachedCommits && cachedCommits.length > 0 && (
         <div className="card mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-lg">Today's Commits ({cachedCommits.length})</h2>
+            <h2 className="font-semibold text-lg">
+              {selectedDate === today ? "Today's Commits" : "Commits"} ({cachedCommits.length})
+            </h2>
             <Link
-              to={`/journal/${today}`}
+              to={`/journal/${selectedDate}`}
               className="btn-primary text-sm"
             >
               Generate Journal
             </Link>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
-            {cachedCommits.map((commit) => (
-              <div key={commit.sha} className="py-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{commit.message.split('\n')[0]}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {commit.repo.name} • {new Date(commit.timestamp).toLocaleTimeString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4 text-xs">
-                    <span className="text-green-600">+{commit.additions}</span>
-                    <span className="text-red-600">-{commit.deletions}</span>
+            {cachedCommits.map((commit) => {
+              const commitMessage = commit.message.split('\n');
+              const title = commitMessage[0];
+              const description = commitMessage.slice(1).join('\n').trim();
+              const commitTime = new Date(commit.timestamp);
+              
+              return (
+                <div key={commit.sha} className="py-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{title}</p>
+                      {description && (
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 whitespace-pre-wrap">
+                          {description}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-2">
+                        {commit.repo.name} • {commitTime.toLocaleTimeString()} • {commit.changedFiles} files
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4 text-xs flex-shrink-0">
+                      <span className="text-green-600">+{commit.additions}</span>
+                      <span className="text-red-600">-{commit.deletions}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -242,7 +272,7 @@ export function Dashboard() {
       {cachedCommits && cachedCommits.length === 0 && (
         <div className="card mb-8">
           <div className="py-8 text-center text-gray-500">
-            <p>No commits found for today. Click "Fetch Today's Commits" or make some commits on GitHub!</p>
+            <p>No commits found for {selectedDate === today ? "today" : "this date"}. Click "Fetch Commits" or make some commits on GitHub!</p>
           </div>
         </div>
       )}
