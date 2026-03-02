@@ -1,68 +1,330 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Custom theme */
+@theme {
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --color-category-development: #3b82f6;
+  --color-category-feature: #8b5cf6;
+  --color-category-bugfix: #ef4444;
+  --color-category-refactor: #f97316;
+  --color-category-review: #22c55e;
+  --color-category-meeting: #eab308;
+  --color-category-documentation: #14b8a6;
+  --color-category-research: #6366f1;
+  --color-category-testing: #ec4899;
+  --color-category-lunch: #9ca3af;
+  --color-category-break: #9ca3af;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* Base styles */
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  background-color: rgb(249 250 251);
+  color: rgb(17 24 39);
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: rgb(3 7 18);
+    color: rgb(243 244 246);
+  }
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+/* Component styles - Standard CSS for Tailwind v4 compatibility */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition-property: color, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.btn:focus {
+  outline: 2px solid;
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: rgb(2 132 199);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: rgb(3 105 161);
+}
+
+.btn-primary:focus {
+  outline-color: rgb(14 165 233);
+}
+
+.btn-secondary {
+  background-color: rgb(229 231 235);
+  color: rgb(31 41 55);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgb(209 213 219);
+}
+
+.btn-secondary:focus {
+  outline-color: rgb(156 163 175);
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-secondary {
+    background-color: rgb(55 65 81);
+    color: rgb(229 231 235);
   }
-  a:hover {
-    color: #747bff;
+  
+  .btn-secondary:hover:not(:disabled) {
+    background-color: rgb(75 85 99);
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: rgb(75 85 99);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: rgb(243 244 246);
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-ghost {
+    color: rgb(156 163 175);
+  }
+  
+  .btn-ghost:hover:not(:disabled) {
+    background-color: rgb(31 41 55);
+  }
+}
+
+.btn-danger {
+  background-color: rgb(220 38 38);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: rgb(185 28 28);
+}
+
+.btn-danger:focus {
+  outline-color: rgb(239 68 68);
+}
+
+.card {
+  border-radius: 0.75rem;
+  background-color: white;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border-width: 1px;
+  border-color: rgb(229 231 235);
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: rgb(17 24 39);
+    border-color: rgb(31 41 55);
+  }
+}
+
+.input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border-width: 1px;
+  border-color: rgb(209 213 219);
+  background-color: white;
+  padding: 0.5rem 1rem;
+  color: rgb(17 24 39);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.input::placeholder {
+  color: rgb(156 163 175);
+}
+
+.input:focus {
+  border-color: rgb(14 165 233);
+  outline: 2px solid rgb(14 165 233 / 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .input {
+    border-color: rgb(75 85 99);
+    background-color: rgb(31 41 55);
+    color: rgb(243 244 246);
+  }
+  
+  .input::placeholder {
+    color: rgb(107 114 128);
+  }
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: rgb(55 65 81);
+  margin-bottom: 0.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .label {
+    color: rgb(209 213 219);
+  }
+}
+
+/* Timeline specific */
+.timeline-container {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+}
+
+.time-markers {
+  display: flex;
+  flex-direction: column;
+  width: 4rem;
+  flex-shrink: 0;
+}
+
+.hour-marker {
+  height: 5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(107 114 128);
+  font-weight: 500;
+}
+
+.blocks-container {
+  position: relative;
+  flex: 1 1 0%;
+  border-left-width: 2px;
+  border-color: rgb(229 231 235);
+}
+
+@media (prefers-color-scheme: dark) {
+  .blocks-container {
+    border-color: rgb(55 65 81);
+  }
+}
+
+.time-block {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  border-left-width: 4px;
+}
+
+.time-block:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.block-time {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+}
+
+.block-task {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.block-description {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  opacity: 0.9;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.edited-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  background-color: rgb(254 249 195);
+  color: rgb(161 98 7);
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .edited-badge {
+    background-color: rgb(161 98 7 / 0.3);
+    color: rgb(250 204 21);
+  }
+}
+
+/* Utility animations */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
