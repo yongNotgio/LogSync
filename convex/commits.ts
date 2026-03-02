@@ -23,6 +23,7 @@ const commitSchema = v.object({
   repo: v.object({
     name: v.string(),
     fullName: v.string(),
+    description: v.optional(v.string()),
   }),
 });
 
@@ -109,6 +110,7 @@ export const getCommits = query({
 interface GitHubRepo {
   name: string;
   full_name: string;
+  description?: string | null;
 }
 
 interface GitHubCommit {
@@ -140,7 +142,7 @@ interface CachedCommit {
   deletions: number;
   changedFiles: number;
   patches?: Array<{ filename: string; status: string; patch?: string }>;
-  repo: { name: string; fullName: string };
+  repo: { name: string; fullName: string; description?: string };
 }
 
 interface CacheResult {
@@ -253,6 +255,7 @@ export const fetchCommitsForDate = action({
               repo: {
                 name: repo.name,
                 fullName: repo.full_name,
+                description: repo.description || undefined,
               },
             });
           } catch {

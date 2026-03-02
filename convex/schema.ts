@@ -68,6 +68,7 @@ export default defineSchema({
         repo: v.object({
           name: v.string(),
           fullName: v.string(),
+          description: v.optional(v.string()),
         }),
       })
     ),

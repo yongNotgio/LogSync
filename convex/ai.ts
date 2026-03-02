@@ -7,6 +7,8 @@ const JOURNAL_GENERATION_PROMPT = `Generate an Internship Daily Accomplishment R
 
 FORMAT: Create 3-5 CONSOLIDATED work blocks (NOT one per commit). Group related commits together.
 
+CONTEXT: Each repository has a description explaining what the project is about. Use this context to write meaningful, specific learning outcomes.
+
 OUTPUT FORMAT (JSON array):
 [
   {
@@ -14,7 +16,7 @@ OUTPUT FORMAT (JSON array):
     "end": "10:30",
     "task": "Route25 Flutter App Development",
     "description": "Added Flutter MVP, route models, matcher, and UI screens",
-    "learning": "Learned Flutter project setup, implementing route matching algorithms, and building responsive UI screens",
+    "learning": "Learned Flutter project setup, implementing route matching algorithms for public transportation, and building responsive UI screens for Philippine jeepney routes",
     "category": "feature"
   },
   {
@@ -22,7 +24,7 @@ OUTPUT FORMAT (JSON array):
     "end": "12:00",
     "task": "Dataset and Documentation",
     "description": "Added GeoJSON datasets, SQL builders, and project documentation",
-    "learning": "Practiced working with geospatial data formats and SQL schema design",
+    "learning": "Practiced working with geospatial data formats (GeoJSON) for mapping Iloilo routes and SQL schema design for transportation data",
     "category": "documentation"
   },
   {
@@ -36,9 +38,9 @@ OUTPUT FORMAT (JSON array):
   {
     "start": "13:00",
     "end": "17:00",
-    "task": "NightWalkers App Updates",
+    "task": "NightWalkers Safety App Updates",
     "description": "Refactored settings UI, added location permissions, dark theme revamp",
-    "learning": "Implemented GPS location handling, practiced UI/UX dark theme design patterns",
+    "learning": "Implemented GPS location handling for emergency SOS features, practiced UI/UX dark theme design patterns for better night visibility",
     "category": "refactor"
   }
 ]
@@ -47,9 +49,9 @@ RULES:
 1. GROUP related commits by repo or feature area into ONE block
 2. Maximum 5 blocks total (excluding lunch)
 3. Minimum 1 hour per work block
-4. task: Summarize the grouped work (2-6 words)
+4. task: Summarize the grouped work (2-6 words), optionally include project name
 5. description: List what was done (combine commit messages briefly)
-6. learning: Write 1-2 sentences about procedures/skills practiced (technical learning)
+6. learning: Write 1-2 sentences about procedures/skills practiced. BE SPECIFIC to the project context using the repo description. Mention actual technologies, features, or domain knowledge gained.
 7. Schedule: 08:00-17:00, lunch 12:00-13:00, no gaps
 
 CATEGORIES: feature, bugfix, refactor, documentation, testing, development, lunch`;
@@ -214,7 +216,7 @@ interface CachedCommit {
   deletions: number;
   changedFiles: number;
   patches?: Array<{ filename: string; status: string; patch?: string }>;
-  repo: { name: string; fullName: string };
+  repo: { name: string; fullName: string; description?: string };
 }
 
 interface CacheResult {
@@ -289,6 +291,7 @@ export const generateJournal = action({
         index: idx + 1,
         message: c.message,
         repo: c.repo.name,
+        repoDescription: c.repo.description,
         lines: lines,
         percentage: Math.round(percentage),
         estimatedMinutes: estimatedMinutes,
@@ -314,12 +317,15 @@ COMMITS BY REPOSITORY:
 ${Object.entries(commitsByRepo).map(([repo, commits]) => {
   const repoLines = commits.reduce((sum, c) => sum + c.lines, 0);
   const repoPercent = totalLines > 0 ? Math.round((repoLines / totalLines) * 100) : 0;
+  const repoDesc = commits[0]?.repoDescription;
   return `
-[${repo}] - ${commits.length} commits, ${repoLines} lines (${repoPercent}% of day):
+[${repo}]${repoDesc ? ` - ${repoDesc}` : ''}
+${commits.length} commits, ${repoLines} lines (${repoPercent}% of day):
 ${commits.map(c => `  - "${c.message.split('\n')[0]}"`).join('\n')}`;
-}).join('\n')}
+}).join('\n\n')}
 
-Generate 3-5 consolidated blocks. Group commits from same repo together. Include learning field.`;
+Generate 3-5 consolidated blocks. Group commits from same repo together.
+Use repo descriptions to write meaningful learning outcomes about procedures performed.`;
 
     console.log("Sending to Gemini AI:", {
       date,
