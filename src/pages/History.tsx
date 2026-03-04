@@ -11,6 +11,10 @@ import type { WorkBlock } from "@/types";
 
 type Journal = Doc<"journals">;
 
+function IconLock() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>; }
+function IconInbox() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 text-sky-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>; }
+function IconArrow() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>; }
+
 export function History() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuth();
   const [filter, setFilter] = useState<"all" | "draft" | "finalized">("all");
@@ -63,7 +67,7 @@ export function History() {
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-4xl px-4 py-10 bg-white min-h-screen">
       {/* ── Header ── */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

@@ -92,31 +92,31 @@ export interface AuthState {
   user: User | null;
 }
 
-// Category styling
+// Category styling — sky/indigo theme
 export const CATEGORY_COLORS: Record<BlockCategory, string> = {
-  development: "bg-blue-500",
-  feature: "bg-purple-500",
-  bugfix: "bg-red-500",
-  refactor: "bg-orange-500",
-  review: "bg-green-500",
-  meeting: "bg-yellow-500",
-  documentation: "bg-teal-500",
-  research: "bg-indigo-500",
-  testing: "bg-pink-500",
-  lunch: "bg-gray-400",
-  break: "bg-gray-400",
+  development: "bg-sky-500",
+  feature: "bg-indigo-500",
+  bugfix: "bg-rose-500",
+  refactor: "bg-violet-500",
+  review: "bg-emerald-500",
+  meeting: "bg-amber-500",
+  documentation: "bg-cyan-500",
+  research: "bg-blue-500",
+  testing: "bg-fuchsia-500",
+  lunch: "bg-slate-400",
+  break: "bg-slate-400",
 };
 
 export const CATEGORY_ICONS: Record<BlockCategory, string> = {
-  development: "💻",
-  feature: "✨",
-  bugfix: "🐛",
-  refactor: "♻️",
-  review: "👀",
-  meeting: "📅",
-  documentation: "📝",
-  research: "🔍",
-  testing: "🧪",
-  lunch: "🍽️",
-  break: "☕",
+  development: "dev",
+  feature: "feat",
+  bugfix: "fix",
+  refactor: "refac",
+  review: "review",
+  meeting: "meet",
+  documentation: "docs",
+  research: "research",
+  testing: "test",
+  lunch: "lunch",
+  break: "break",
 };

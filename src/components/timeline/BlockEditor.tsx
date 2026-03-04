@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { isValidTimeRange } from "@/lib/utils";
-import { CATEGORY_ICONS, type WorkBlock, type BlockCategory } from "@/types";
+import { type WorkBlock, type BlockCategory } from "@/types";
 
 interface BlockEditorProps {
   block: WorkBlock;
@@ -23,6 +23,25 @@ const CATEGORIES: BlockCategory[] = [
   "break",
 ];
 
+// Sky/indigo accent per category
+const CAT_STYLE: Record<BlockCategory, { active: string; idle: string; label: string }> = {
+  development:   { active: "bg-sky-100 text-sky-700 ring-2 ring-sky-400",       idle: "bg-slate-100 text-slate-600 hover:bg-sky-50 hover:text-sky-700",     label: "dev" },
+  feature:       { active: "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-400", idle: "bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700", label: "feat" },
+  bugfix:        { active: "bg-rose-100 text-rose-700 ring-2 ring-rose-400",     idle: "bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700",   label: "fix" },
+  refactor:      { active: "bg-violet-100 text-violet-700 ring-2 ring-violet-400", idle: "bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700", label: "refac" },
+  review:        { active: "bg-emerald-100 text-emerald-700 ring-2 ring-emerald-400", idle: "bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700", label: "review" },
+  meeting:       { active: "bg-amber-100 text-amber-700 ring-2 ring-amber-400",  idle: "bg-slate-100 text-slate-600 hover:bg-amber-50 hover:text-amber-700", label: "meet" },
+  documentation: { active: "bg-cyan-100 text-cyan-700 ring-2 ring-cyan-400",    idle: "bg-slate-100 text-slate-600 hover:bg-cyan-50 hover:text-cyan-700",   label: "docs" },
+  research:      { active: "bg-blue-100 text-blue-700 ring-2 ring-blue-400",    idle: "bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700",   label: "res." },
+  testing:       { active: "bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-400", idle: "bg-slate-100 text-slate-600 hover:bg-fuchsia-50 hover:text-fuchsia-700", label: "test" },
+  lunch:         { active: "bg-slate-200 text-slate-700 ring-2 ring-slate-400", idle: "bg-slate-100 text-slate-600 hover:bg-slate-200",                    label: "lunch" },
+  break:         { active: "bg-slate-200 text-slate-700 ring-2 ring-slate-400", idle: "bg-slate-100 text-slate-600 hover:bg-slate-200",                    label: "break" },
+};
+
+const inputCls =
+  "w-full rounded-xl border border-sky-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 placeholder:text-slate-400";
+const labelCls = "block text-sm font-semibold text-sky-900 mb-1.5";
+
 export function BlockEditor({ block, onSave, onDelete, onClose }: BlockEditorProps) {
   const [task, setTask] = useState(block.task);
   const [description, setDescription] = useState(block.description);
@@ -33,94 +52,57 @@ export function BlockEditor({ block, onSave, onDelete, onClose }: BlockEditorPro
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = () => {
-    // Validate
-    if (!task.trim()) {
-      setError("Task title is required");
-      return;
-    }
-
-    if (!description.trim()) {
-      setError("Description is required");
-      return;
-    }
-
-    if (!isValidTimeRange(start, end)) {
-      setError("End time must be after start time");
-      return;
-    }
-
-    onSave({
-      task: task.trim(),
-      description: description.trim(),
-      learning: learning.trim(),
-      category,
-      start,
-      end,
-    });
+    if (!task.trim()) { setError("Task title is required"); return; }
+    if (!description.trim()) { setError("Description is required"); return; }
+    if (!isValidTimeRange(start, end)) { setError("End time must be after start time"); return; }
+    onSave({ task: task.trim(), description: description.trim(), learning: learning.trim(), category, start, end });
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-sky-900/40 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-xl animate-slide-up"
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl shadow-sky-200/40 border border-sky-100 flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-          <h2 className="text-lg font-semibold">Edit Block</h2>
+        <div className="flex items-center justify-between border-b border-sky-100 px-6 py-4 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500" />
+            <h2 className="text-lg font-bold text-sky-900">Edit Block</h2>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-sky-700 hover:bg-sky-50 transition-colors"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Form */}
-        <div className="p-6 space-y-4">
-          {/* Time inputs */}
+        {/* Form — scrollable */}
+        <div className="p-6 space-y-5 overflow-y-auto flex-1">
+          {/* Time */}
           <div>
-            <label className="label">Time</label>
+            <label className={labelCls}>Time Range</label>
             <div className="flex items-center gap-3">
-              <input
-                type="time"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-                className="input"
-              />
-              <span className="text-gray-500">to</span>
-              <input
-                type="time"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-                className="input"
-              />
+              <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className={inputCls} />
+              <span className="text-slate-400 font-medium">→</span>
+              <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className={inputCls} />
             </div>
           </div>
 
           {/* Task */}
           <div>
-            <label className="label">Task Title</label>
+            <label className={labelCls}>Task Title</label>
             <input
               type="text"
               value={task}
               onChange={(e) => setTask(e.target.value)}
-              className="input"
+              className={inputCls}
               placeholder="e.g., Feature Implementation"
               maxLength={100}
             />
@@ -128,86 +110,95 @@ export function BlockEditor({ block, onSave, onDelete, onClose }: BlockEditorPro
 
           {/* Category */}
           <div>
-            <label className="label">Category</label>
+            <label className={labelCls}>Category</label>
             <div className="grid grid-cols-4 gap-2">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategory(cat)}
-                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    category === cat
-                      ? "bg-primary-100 text-primary-700 ring-2 ring-primary-500 dark:bg-primary-900/30 dark:text-primary-400"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  <span>{CATEGORY_ICONS[cat]}</span>
-                  <span className="truncate capitalize">{cat}</span>
-                </button>
-              ))}
+              {CATEGORIES.map((cat) => {
+                const s = CAT_STYLE[cat];
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setCategory(cat)}
+                    className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      category === cat ? s.active : s.idle
+                    }`}
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{s.label}</span>
+                    <span className="truncate capitalize text-[11px] font-normal">{cat}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="label">Activities/Tasks Description</label>
+            <label className={labelCls}>Activities / Tasks Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="input min-h-[80px] resize-none"
-              placeholder="What was accomplished..."
+              className={`${inputCls} min-h-[88px] resize-none`}
+              placeholder="What was accomplished during this block..."
               maxLength={500}
             />
-            <div className="text-xs text-gray-400 mt-1 text-right">
-              {description.length}/500
-            </div>
+            <div className="text-xs text-slate-400 mt-1 text-right">{description.length}/500</div>
           </div>
 
           {/* Learning */}
           <div>
-            <label className="label">Learning (Procedure Performed)</label>
+            <label className={labelCls}>Learning & Procedure Performed</label>
             <textarea
               value={learning}
               onChange={(e) => setLearning(e.target.value)}
-              className="input min-h-[80px] resize-none"
-              placeholder="Discuss the procedure performed and what was learned..."
+              className={`${inputCls} min-h-[88px] resize-none`}
+              placeholder="Describe the procedure and what was learned..."
               maxLength={500}
             />
-            <div className="text-xs text-gray-400 mt-1 text-right">
-              {learning.length}/500
-            </div>
+            <div className="text-xs text-slate-400 mt-1 text-right">{learning.length}/500</div>
           </div>
 
           {/* Source info */}
           {block.source.type === "commit" && (
-            <div className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-              <span className="font-medium">Source:</span>{" "}
-              <code className="text-primary-600">{block.source.sha.slice(0, 7)}</code>{" "}
-              from {block.source.repo}
+            <div className="text-xs text-sky-700 bg-sky-50 border border-sky-100 rounded-xl px-4 py-3">
+              <span className="font-semibold">Source commit:</span>{" "}
+              <code className="font-mono text-indigo-600">{block.source.sha.slice(0, 7)}</code>{" "}
+              <span className="text-slate-500">from</span> {block.source.repo}
             </div>
           )}
 
           {/* Error */}
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
+            <div className="text-sm text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2.5 rounded-xl">
               {error}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+        <div className="flex items-center justify-between border-t border-sky-100 px-6 py-4 flex-shrink-0">
           <button
             onClick={onDelete}
-            className="btn-danger"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 px-4 py-2 text-sm font-semibold hover:bg-rose-100 transition-all"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
             Delete
           </button>
-          <div className="flex gap-3">
-            <button onClick={onClose} className="btn-secondary">
+          <div className="flex gap-2.5">
+            <button
+              onClick={onClose}
+              className="inline-flex items-center rounded-xl border border-sky-200 bg-white text-sky-700 px-4 py-2 text-sm font-semibold hover:bg-sky-50 transition-all"
+            >
               Cancel
             </button>
-            <button onClick={handleSave} className="btn-primary">
+            <button
+              onClick={handleSave}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-5 py-2 text-sm font-semibold shadow-md hover:shadow-sky-300/50 hover:scale-[1.02] transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
               Save Changes
             </button>
           </div>

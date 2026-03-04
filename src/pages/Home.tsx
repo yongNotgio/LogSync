@@ -124,7 +124,7 @@ export function Home() {
   };
 
   return (
-    <div className="relative bg-gradient-to-br from-sky-50 via-white to-indigo-50 min-h-screen overflow-hidden">
+    <div className="relative bg-white min-h-screen overflow-hidden">
       {/* Animated 3-D wireframe background */}
       <div className="absolute inset-0 opacity-30">
         <ThreeBackground />

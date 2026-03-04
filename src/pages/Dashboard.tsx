@@ -8,6 +8,13 @@ import { getTodayString, formatDate, formatShortDate } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { animate, stagger } from "animejs";
 
+function IconBook() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>; }
+function IconCheck() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>; }
+function IconEdit() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>; }
+function IconPlus() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>; }
+function IconHistory() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>; }
+function IconInbox() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-sky-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>; }
+
 type Journal = Doc<"journals">;
 
 interface FetchedCommit {
@@ -55,6 +62,8 @@ export function Dashboard() {
   useEffect(() => {
     if (cardsRef.current) {
       const cards = cardsRef.current.querySelectorAll(".dash-card");
+      // Make visible immediately to avoid deadspace, then animate
+      cards.forEach((c) => ((c as HTMLElement).style.opacity = "1"));
       animate(cards, {
         translateY: [30, 0],
         opacity: [0, 1],
@@ -71,7 +80,9 @@ export function Dashboard() {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center">
         <div className="rounded-2xl bg-white border border-sky-100 shadow-lg shadow-sky-100/40 p-10">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-100 to-indigo-100 flex items-center justify-center text-3xl mx-auto mb-5">🔒</div>
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-100 to-indigo-100 flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
           <h1 className="text-xl font-bold text-sky-900 mb-2">Authentication Required</h1>
           <p className="text-slate-500 mb-6">Please sign in to access your dashboard.</p>
           <Link to="/" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-6 py-2.5 text-white font-semibold shadow-md hover:scale-105 transition-transform">
@@ -99,259 +110,277 @@ export function Dashboard() {
   const draftCount = journals?.filter((j: Journal) => j.status === "draft").length ?? 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      {/* ── Header ── */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-sky-900">
-            Welcome back, <span className="bg-gradient-to-r from-sky-500 to-indigo-600 bg-clip-text text-transparent">{user?.username}</span> 👋
-          </h1>
-          <p className="text-slate-500 mt-1">{formatDate(selectedDate)}</p>
+    <div className="min-h-screen bg-white">
+
+      {/* ── Portal top bar ── */}
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Portal › Dashboard</p>
+            <h1 className="text-2xl font-extrabold text-slate-800">
+              Good morning,{" "}
+              <span className="bg-gradient-to-r from-sky-500 to-indigo-600 bg-clip-text text-transparent">{user?.username}</span>
+            </h1>
+          </div>
+          {/* Date picker */}
+          <label className="relative cursor-pointer">
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              max={getTodayString()}
+              className="opacity-0 absolute inset-0 w-full cursor-pointer"
+            />
+            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm hover:border-sky-300 hover:bg-sky-50 transition-colors pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-sky-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span className="font-semibold">{selectedDate === today ? "Today" : selectedDate}</span>
+              <span className="text-slate-400 text-xs hidden sm:inline">— {formatDate(selectedDate)}</span>
+            </div>
+          </label>
         </div>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          max={getTodayString()}
-          className="rounded-xl border border-sky-200 bg-white px-4 py-2 text-sm text-sky-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 w-auto"
-        />
       </div>
 
-      {/* ── Stat pills ── */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {[
-          { label: "Total Journals", value: totalJournals, icon: "📓", color: "from-sky-400 to-sky-600" },
-          { label: "Finalized", value: finalizedCount, icon: "✅", color: "from-emerald-400 to-emerald-600" },
-          { label: "Drafts", value: draftCount, icon: "✏️", color: "from-amber-400 to-orange-500" },
-        ].map(({ label, value, icon, color }) => (
-          <div key={label} className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-5 flex items-center gap-4">
-            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-xl shadow-sm flex-shrink-0`}>
-              {icon}
-            </div>
-            <div>
-              <p className="text-2xl font-extrabold text-sky-900">{value}</p>
-              <p className="text-xs text-slate-500 font-medium">{label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* ── 3-column body ── */}
+      <div className="mx-auto max-w-7xl px-6 py-6 flex gap-6 items-start">
 
-      {/* ── Main cards ── */}
-      <div ref={cardsRef} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-        {/* Journal card */}
-        <div className="dash-card opacity-0 rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-sky-900">
-              {selectedDate === today ? "Today's Journal" : "Journal"}
-            </h2>
-            {selectedJournal?.status === "finalized" && (
-              <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">✓ Finalized</span>
-            )}
-            {selectedJournal?.status === "draft" && (
-              <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full font-semibold">Draft</span>
-            )}
-          </div>
+        {/* ── LEFT column: Profile card + Quick Actions ── */}
+        <div className="w-60 flex-shrink-0 space-y-4">
 
-          {selectedJournal ? (
-            <div className="space-y-3">
-              {[
-                { label: "Time Blocks", value: selectedJournal.blocks.length },
-                { label: "Commits", value: selectedJournal.totalCommits },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between items-center text-sm py-2 border-b border-sky-50">
-                  <span className="text-slate-500">{label}</span>
-                  <span className="font-bold text-sky-700">{value}</span>
+          {/* Profile card */}
+          <div className="rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 p-5 text-white shadow-lg shadow-sky-200/50">
+            <div className="flex items-center gap-3 mb-4">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt={user.username} className="w-12 h-12 rounded-xl object-cover ring-2 ring-white/30 flex-shrink-0" />
+              ) : (
+                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl font-black select-none flex-shrink-0">
+                  {user?.username?.[0]?.toUpperCase() ?? "U"}
                 </div>
-              ))}
-              <Link
-                to={`/journal/${selectedDate}`}
-                className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2.5 text-white font-semibold text-sm shadow-md hover:scale-[1.02] transition-transform"
-              >
-                View Journal →
-              </Link>
+              )}
+              <div className="min-w-0">
+                <p className="font-bold text-sm leading-tight truncate">{user?.username}</p>
+                <p className="text-sky-200 text-xs mt-0.5">Developer</p>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-slate-500">No journal yet. Start by fetching commits.</p>
-              <button
-                onClick={handleFetchCommits}
-                disabled={isFetching}
-                className="w-full rounded-xl border border-sky-200 bg-sky-50 text-sky-700 px-4 py-2.5 text-sm font-semibold hover:bg-sky-100 disabled:opacity-50 transition-colors"
-              >
-                {isFetching ? "Fetching…" : "Fetch Commits"}
-              </button>
-              {fetchError && <p className="text-xs text-red-500 font-medium">{fetchError}</p>}
-              <Link
-                to={`/journal/${selectedDate}`}
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2.5 text-white font-semibold text-sm shadow-md hover:scale-[1.02] transition-transform"
-              >
-                Generate Journal →
-              </Link>
+            <div className="pt-3 border-t border-white/20 flex justify-between text-xs">
+              <span className="text-sky-100">Date</span>
+              <span className="font-semibold">{formatDate(selectedDate).split(",")[0]}</span>
             </div>
-          )}
-        </div>
-
-        {/* Quick links */}
-        <div className="dash-card opacity-0 rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-6">
-          <h2 className="font-bold text-sky-900 mb-5">Quick Actions</h2>
-          <div className="space-y-2">
-            {[
-              { to: `/journal/${today}`, icon: "📝", label: "Create Today's Journal", color: "bg-sky-50 hover:bg-sky-100 text-sky-700" },
-              { to: "/history", icon: "📚", label: "View History", color: "bg-indigo-50 hover:bg-indigo-100 text-indigo-700" },
-            ].map(({ to, icon, label, color }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`flex items-center gap-3 w-full text-left px-4 py-3 rounded-xl ${color} font-medium text-sm transition-colors`}
-              >
-                <span className="text-lg">{icon}</span>
-                {label}
-              </Link>
-            ))}
           </div>
-        </div>
 
-        {/* Recent journals mini */}
-        <div className="dash-card opacity-0 rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-6 lg:col-span-1">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-sky-900">Recent</h2>
-            <Link to="/history" className="text-xs text-sky-500 hover:text-indigo-600 font-semibold transition-colors">View all →</Link>
-          </div>
-          {journals === undefined ? (
-            <p className="text-sm text-slate-400 animate-pulse">Loading…</p>
-          ) : journals.length === 0 ? (
-            <p className="text-sm text-slate-400">No journals yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {journals.slice(0, 3).map((journal: Journal) => (
-                <Link
-                  key={journal._id}
-                  to={`/journal/${journal.date}`}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-sky-50 transition-colors group"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-sky-900">{formatShortDate(journal.date)}</p>
-                    <p className="text-xs text-slate-400">{journal.blocks.length} blocks</p>
-                  </div>
-                  {journal.status === "finalized" ? (
-                    <span className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full">Final</span>
-                  ) : (
-                    <span className="text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full">Draft</span>
-                  )}
+          {/* Quick Actions */}
+          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+            <h2 className="text-sm font-bold text-slate-700 mb-3">Quick Actions</h2>
+            <div className="space-y-1.5">
+              {[
+                { to: `/journal/${today}`, Icon: IconPlus, label: "Create Today's Journal", color: "bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-100" },
+                { to: "/history", Icon: IconHistory, label: "View History", color: "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100" },
+              ].map(({ to, Icon, label, color }) => (
+                <Link key={to} to={to} className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl ${color} font-semibold text-xs transition-colors`}>
+                  <Icon />
+                  {label}
                 </Link>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* ── CENTER: Stat cards + Commits table ── */}
+        <div className="flex-1 min-w-0 space-y-5">
+
+          {/* Stat pills */}
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: "Total Journals", value: totalJournals, Icon: IconBook, color: "from-sky-400 to-sky-600" },
+              { label: "Finalized", value: finalizedCount, Icon: IconCheck, color: "from-emerald-400 to-emerald-600" },
+              { label: "Drafts", value: draftCount, Icon: IconEdit, color: "from-amber-400 to-orange-500" },
+            ].map(({ label, value, Icon, color }) => (
+              <div key={label} className="dash-card rounded-2xl bg-white border border-slate-200 shadow-sm p-5 flex items-center gap-4">
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
+                  <Icon />
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-slate-800 tabular-nums">{value}</p>
+                  <p className="text-xs text-slate-400 font-medium">{label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Commits table */}
+          {cachedCommits !== undefined && (
+            <div ref={commitsRef} className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-2 h-2 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500" />
+                  <h2 className="font-bold text-slate-700 text-sm">
+                    {selectedDate === today ? "Today's Commits" : "Commits"}
+                  </h2>
+                  {cachedCommits.length > 0 && (
+                    <span className="text-xs bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full font-semibold tabular-nums">
+                      {cachedCommits.length}
+                    </span>
+                  )}
+                </div>
+                {cachedCommits.length > 0 && (
+                  <Link
+                    to={`/journal/${selectedDate}`}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 text-white text-xs font-semibold shadow-sm hover:scale-105 transition-transform"
+                  >
+                    Generate Journal →
+                  </Link>
+                )}
+              </div>
+
+              {cachedCommits.length === 0 ? (
+                <div className="py-14 text-center">
+                  <div className="flex justify-center mb-3"><IconInbox /></div>
+                  <p className="text-slate-400 text-sm mb-4">
+                    No commits found for {selectedDate === today ? "today" : "this date"}.
+                  </p>
+                  <button
+                    onClick={handleFetchCommits}
+                    disabled={isFetching}
+                    className="rounded-xl border border-slate-200 bg-slate-50 text-slate-600 px-5 py-2 text-sm font-semibold hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 disabled:opacity-50 transition-colors"
+                  >
+                    {isFetching ? "Fetching…" : "Fetch Commits"}
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
+                  {cachedCommits.map((commit) => {
+                    const [title, ...rest] = commit.message.split("\n");
+                    const description = rest.join("\n").trim();
+                    return (
+                      <div key={commit.sha} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50/80 transition-colors">
+                        <span className="font-mono text-[11px] text-indigo-500 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg flex-shrink-0 select-all">
+                          {commit.sha.slice(0, 7)}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
+                          {description && (
+                            <p className="text-xs text-slate-400 truncate mt-0.5">{description}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0 text-xs text-slate-400">
+                          <span className="font-medium hidden lg:inline">{commit.repo.name}</span>
+                          <span className="hidden lg:inline">
+                            {new Date(commit.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span className="text-emerald-600 font-mono">+{commit.additions}</span>
+                          <span className="text-red-400 font-mono">-{commit.deletions}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* ── Commits section ── */}
-      {cachedCommits !== undefined && (
-        <div ref={commitsRef} className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-6 mb-8">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-sky-900">
-              {selectedDate === today ? "Today's Commits" : "Commits"}
-              {cachedCommits.length > 0 && (
-                <span className="ml-2 text-xs bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full font-semibold">
-                  {cachedCommits.length}
-                </span>
+        {/* ── RIGHT column: Today's Journal + Recent Journals ── */}
+        <div className="w-68 flex-shrink-0 space-y-4" style={{ width: "17rem" }}>
+
+          {/* Today's Journal status card */}
+          <div ref={cardsRef} className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-slate-700">
+                {selectedDate === today ? "Today's Journal" : "Journal"}
+              </h2>
+              {selectedJournal?.status === "finalized" && (
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">✓ Final</span>
               )}
-            </h2>
-            {cachedCommits.length > 0 && (
-              <Link
-                to={`/journal/${selectedDate}`}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 text-white text-sm font-semibold shadow-sm hover:scale-105 transition-transform"
-              >
-                Generate Journal →
-              </Link>
+              {selectedJournal?.status === "draft" && (
+                <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">Draft</span>
+              )}
+            </div>
+
+            {selectedJournal ? (
+              <div className="space-y-2">
+                {[
+                  { label: "Time Blocks", value: selectedJournal.blocks.length },
+                  { label: "Commits", value: selectedJournal.totalCommits },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                    <span className="text-xs text-slate-400">{label}</span>
+                    <span className="font-extrabold text-sky-700 text-base tabular-nums">{value}</span>
+                  </div>
+                ))}
+                <Link
+                  to={`/journal/${selectedDate}`}
+                  className="mt-1 flex items-center justify-center gap-1.5 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 text-white font-semibold text-xs shadow hover:scale-[1.02] transition-transform"
+                >
+                  View Journal →
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400">No journal yet for this date.</p>
+                <button
+                  onClick={handleFetchCommits}
+                  disabled={isFetching}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-600 px-4 py-2 text-xs font-semibold hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 disabled:opacity-50 transition-colors"
+                >
+                  {isFetching ? "Fetching…" : "Fetch Commits"}
+                </button>
+                {fetchError && <p className="text-xs text-red-500 font-medium">{fetchError}</p>}
+                <Link
+                  to={`/journal/${selectedDate}`}
+                  className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 text-white font-semibold text-xs shadow hover:scale-[1.02] transition-transform"
+                >
+                  Generate Journal →
+                </Link>
+              </div>
             )}
           </div>
 
-          {cachedCommits.length === 0 ? (
-            <div className="py-10 text-center">
-              <div className="text-4xl mb-3">📭</div>
-              <p className="text-slate-500 text-sm">No commits found for {selectedDate === today ? "today" : "this date"}.</p>
-              <button
-                onClick={handleFetchCommits}
-                disabled={isFetching}
-                className="mt-4 rounded-xl border border-sky-200 bg-sky-50 text-sky-700 px-5 py-2 text-sm font-semibold hover:bg-sky-100 disabled:opacity-50 transition-colors"
-              >
-                {isFetching ? "Fetching…" : "Fetch Commits"}
-              </button>
+          {/* Recent Journals */}
+          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-slate-700">Recent Journals</h2>
+              <Link to="/history" className="text-xs text-sky-500 hover:text-indigo-600 font-semibold transition-colors">View all →</Link>
             </div>
-          ) : (
-            <div className="divide-y divide-sky-50 max-h-96 overflow-y-auto pr-1">
-              {cachedCommits.map((commit) => {
-                const [title, ...rest] = commit.message.split("\n");
-                const description = rest.join("\n").trim();
-                return (
-                  <div key={commit.sha} className="py-3.5 flex items-start justify-between gap-4 group hover:bg-sky-50/50 -mx-2 px-2 rounded-xl transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-sky-900 truncate">{title}</p>
-                      {description && (
-                        <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{description}</p>
-                      )}
-                      <p className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
-                        <span className="font-medium text-slate-500">{commit.repo.name}</span>
-                        <span>·</span>
-                        <span>{new Date(commit.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                        <span>·</span>
-                        <span>{commit.changedFiles} files</span>
+
+            {journals === undefined ? (
+              <div className="p-5">
+                <p className="text-sm text-slate-400 animate-pulse">Loading…</p>
+              </div>
+            ) : journals.length === 0 ? (
+              <div className="p-5 text-center">
+                <p className="text-sm text-slate-400">No journals yet.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {journals.slice(0, 8).map((journal: Journal) => (
+                  <Link
+                    key={journal._id}
+                    to={`/journal/${journal.date}`}
+                    className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-700 group-hover:text-sky-700 transition-colors truncate">
+                        {formatShortDate(journal.date)}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {journal.blocks.length} blocks · {journal.totalCommits} commits
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs flex-shrink-0 font-mono">
-                      <span className="text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">+{commit.additions}</span>
-                      <span className="text-red-500 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded">-{commit.deletions}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Full recent journals ── */}
-      <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-bold text-sky-900">All Recent Journals</h2>
-          <Link to="/history" className="text-sm text-sky-500 hover:text-indigo-600 font-semibold transition-colors">View all →</Link>
+                    {journal.status === "finalized" ? (
+                      <span className="flex-shrink-0 ml-2 text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">Done</span>
+                    ) : (
+                      <span className="flex-shrink-0 ml-2 text-[10px] bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">Draft</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {journals === undefined ? (
-          <p className="text-slate-400 text-sm animate-pulse py-4">Loading…</p>
-        ) : journals.length === 0 ? (
-          <div className="py-10 text-center">
-            <div className="text-4xl mb-3">📭</div>
-            <p className="text-slate-500 text-sm">No journals yet. Create your first one!</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-sky-50">
-            {journals.map((journal: Journal) => (
-              <Link
-                key={journal._id}
-                to={`/journal/${journal.date}`}
-                className="flex items-center justify-between py-3.5 hover:bg-sky-50/50 -mx-2 px-2 rounded-xl transition-colors group"
-              >
-                <div>
-                  <p className="font-semibold text-sky-900">{formatShortDate(journal.date)}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {journal.blocks.length} blocks · {journal.totalCommits} commits
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {journal.status === "finalized" ? (
-                    <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">✓ Final</span>
-                  ) : (
-                    <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full font-semibold">Draft</span>
-                  )}
-                  <span className="text-slate-300 group-hover:text-sky-400 transition-colors">→</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
 }
+
