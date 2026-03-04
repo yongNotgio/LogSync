@@ -5,7 +5,8 @@ import type { Doc } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/common/Loading";
 import { formatDate } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { animate, stagger } from "animejs";
 import type { WorkBlock } from "@/types";
 
 type Journal = Doc<"journals">;
@@ -13,26 +14,36 @@ type Journal = Doc<"journals">;
 export function History() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuth();
   const [filter, setFilter] = useState<"all" | "draft" | "finalized">("all");
+  const listRef = useRef<HTMLDivElement>(null);
 
   const journals = useQuery(
     api.journals.listJournals,
     userId ? { userId, limit: 100 } : "skip"
   );
 
-  if (authLoading) {
-    return <LoadingScreen message="Loading..." />;
-  }
+  useEffect(() => {
+    if (listRef.current) {
+      const items = listRef.current.querySelectorAll(".journal-row");
+      animate(items, {
+        translateX: [-24, 0],
+        opacity: [0, 1],
+        duration: 500,
+        ease: "outExpo",
+        delay: stagger(60, { start: 50 }),
+      });
+    }
+  }, [journals, filter]);
+
+  if (authLoading) return <LoadingScreen message="Loading history..." />;
 
   if (!isAuthenticated || !userId) {
     return (
-      <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <div className="card">
-          <div className="text-4xl mb-4">🔒</div>
-          <h1 className="text-xl font-bold mb-2">Authentication Required</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Please sign in to view your journal history.
-          </p>
-          <Link to="/" className="btn-primary">
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <div className="rounded-2xl bg-white border border-sky-100 shadow-lg shadow-sky-100/40 p-10">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-100 to-indigo-100 flex items-center justify-center text-3xl mx-auto mb-5">🔒</div>
+          <h1 className="text-xl font-bold text-sky-900 mb-2">Authentication Required</h1>
+          <p className="text-slate-500 mb-6">Please sign in to view your journal history.</p>
+          <Link to="/" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-6 py-2.5 text-white font-semibold shadow-md hover:scale-105 transition-transform">
             Go to Home
           </Link>
         </div>
@@ -45,110 +56,108 @@ export function History() {
     return j.status === filter;
   });
 
+  const tabs: { key: "all" | "draft" | "finalized"; label: string; count?: number }[] = [
+    { key: "all", label: "All", count: journals?.length },
+    { key: "draft", label: "Drafts", count: journals?.filter((j: Journal) => j.status === "draft").length },
+    { key: "finalized", label: "Finalized", count: journals?.filter((j: Journal) => j.status === "finalized").length },
+  ];
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Journal History</h1>
-        
+    <div className="mx-auto max-w-4xl px-4 py-10">
+      {/* ── Header ── */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-sky-900">Journal History</h1>
+          <p className="text-slate-500 text-sm mt-1">All your past work logs in one place.</p>
+        </div>
+
         {/* Filter tabs */}
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-              filter === "all"
-                ? "bg-white dark:bg-gray-700 shadow-sm font-medium"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter("draft")}
-            className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-              filter === "draft"
-                ? "bg-white dark:bg-gray-700 shadow-sm font-medium"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            }`}
-          >
-            Drafts
-          </button>
-          <button
-            onClick={() => setFilter("finalized")}
-            className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-              filter === "finalized"
-                ? "bg-white dark:bg-gray-700 shadow-sm font-medium"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            }`}
-          >
-            Finalized
-          </button>
+        <div className="flex gap-1 bg-sky-50 border border-sky-100 rounded-xl p-1 shadow-sm">
+          {tabs.map(({ key, label, count }) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`px-4 py-1.5 text-sm rounded-lg font-semibold transition-all duration-150 flex items-center gap-1.5 ${
+                filter === key
+                  ? "bg-white text-sky-700 shadow-sm border border-sky-100"
+                  : "text-slate-500 hover:text-sky-600 hover:bg-white/60"
+              }`}
+            >
+              {label}
+              {count !== undefined && (
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${filter === key ? "bg-sky-100 text-sky-600" : "bg-slate-100 text-slate-400"}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
       {journals === undefined ? (
         <LoadingScreen message="Loading journals..." />
       ) : filteredJournals?.length === 0 ? (
-        <div className="card text-center py-12">
-          <div className="text-4xl mb-4">📭</div>
-          <h2 className="text-xl font-semibold mb-2">No journals found</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {filter === "all"
-              ? "You haven't created any journals yet."
-              : `No ${filter} journals found.`}
+        <div className="rounded-2xl bg-white border border-sky-100 shadow-sm p-16 text-center">
+          <div className="text-5xl mb-4">📭</div>
+          <h2 className="text-xl font-bold text-sky-900 mb-2">No journals found</h2>
+          <p className="text-slate-500 mb-6 text-sm">
+            {filter === "all" ? "You haven't created any journals yet." : `No ${filter} journals found.`}
           </p>
-          <Link to="/journal" className="btn-primary">
+          <Link
+            to="/journal"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-6 py-2.5 text-white font-semibold shadow-md hover:scale-105 transition-transform"
+          >
             Create Your First Journal
           </Link>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div ref={listRef} className="space-y-3">
           {filteredJournals?.map((journal: Journal) => (
             <Link
               key={journal._id}
               to={`/journal/${journal.date}`}
-              className="card block hover:shadow-md transition-shadow"
+              className="journal-row opacity-0 flex items-start justify-between rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/20 p-5 hover:shadow-md hover:border-sky-200 hover:scale-[1.01] transition-all duration-200 group"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="font-bold text-sky-900 text-base">
                     {formatDate(journal.date)}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {journal.blocks.length} blocks • {journal.totalCommits} commits
-                    {journal.totalLinesChanged > 0 && (
-                      <> • {journal.totalLinesChanged} lines changed</>
-                    )}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
                   {journal.status === "finalized" ? (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400">
-                      ✓ Finalized
-                    </span>
+                    <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">✓ Finalized</span>
                   ) : (
-                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full dark:bg-yellow-900/30 dark:text-yellow-400">
-                      Draft
+                    <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full font-semibold">Draft</span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-400 mb-3 flex items-center gap-1.5">
+                  <span>{journal.blocks.length} blocks</span>
+                  <span>·</span>
+                  <span>{journal.totalCommits} commits</span>
+                  {journal.totalLinesChanged > 0 && (
+                    <>
+                      <span>·</span>
+                      <span className="text-emerald-500 font-medium">{journal.totalLinesChanged} lines</span>
+                    </>
+                  )}
+                </p>
+                {/* Block preview tags */}
+                <div className="flex flex-wrap gap-1.5">
+                  {(journal.blocks as WorkBlock[]).slice(0, 4).map((block: WorkBlock) => (
+                    <span
+                      key={block.id}
+                      className="text-xs px-2.5 py-1 bg-sky-50 border border-sky-100 text-sky-600 rounded-lg font-medium truncate max-w-[160px]"
+                    >
+                      {block.task}
+                    </span>
+                  ))}
+                  {journal.blocks.length > 4 && (
+                    <span className="text-xs px-2.5 py-1 bg-slate-50 border border-slate-100 text-slate-400 rounded-lg">
+                      +{journal.blocks.length - 4} more
                     </span>
                   )}
                 </div>
               </div>
-
-              {/* Preview of blocks */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {(journal.blocks as WorkBlock[]).slice(0, 5).map((block: WorkBlock) => (
-                  <span
-                    key={block.id}
-                    className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded"
-                  >
-                    {block.task}
-                  </span>
-                ))}
-                {journal.blocks.length > 5 && (
-                  <span className="text-xs px-2 py-1 text-gray-500">
-                    +{journal.blocks.length - 5} more
-                  </span>
-                )}
-              </div>
+              <span className="text-slate-300 group-hover:text-sky-400 transition-colors ml-4 text-lg flex-shrink-0 mt-1">→</span>
             </Link>
           ))}
         </div>
