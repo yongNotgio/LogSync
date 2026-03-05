@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { GitHubLogin } from "@/components/auth/GitHubLogin";
@@ -6,37 +6,20 @@ import { ThreeBackground } from "@/components/common/ThreeBackground";
 import { animate, stagger } from "animejs";
 import homeImg from "@/assets/home.png";
 
-const features = [
-  {
-    icon: "🔗",
-    title: "GitHub Integration",
-    desc: "Automatically pull commits, diffs, and activity from your repositories.",
-  },
-  {
-    icon: "🤖",
-    title: "AI Enhancement",
-    desc: "Transform casual commit messages into professional, HR-ready descriptions.",
-  },
-  {
-    icon: "⏰",
-    title: "8-to-5 Schedule",
-    desc: "Map all activities to a standard workday, regardless of actual commit times.",
-  },
-  {
-    icon: "✏️",
-    title: "Inline Editing",
-    desc: "Fine-tune AI-generated content with an intuitive editing interface.",
-  },
-  {
-    icon: "💾",
-    title: "Auto-Save",
-    desc: "Never lose your work with real-time persistence powered by Convex.",
-  },
-  {
-    icon: "🔒",
-    title: "Finalize & Lock",
-    desc: "Lock completed journals to prevent accidental changes.",
-  },
+function FeatIconLink() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>; }
+function FeatIconAI() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>; }
+function FeatIconClock() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>; }
+function FeatIconEdit() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>; }
+function FeatIconSave() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>; }
+function FeatIconLock() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>; }
+
+const features: { icon: ReactNode; title: string; desc: string }[] = [
+  { icon: <FeatIconLink />, title: "GitHub Integration", desc: "Automatically pull commits, diffs, and activity from your repositories." },
+  { icon: <FeatIconAI />, title: "AI Enhancement", desc: "Transform casual commit messages into professional, HR-ready descriptions." },
+  { icon: <FeatIconClock />, title: "8-to-5 Schedule", desc: "Map all activities to a standard workday, regardless of actual commit times." },
+  { icon: <FeatIconEdit />, title: "Inline Editing", desc: "Fine-tune AI-generated content with an intuitive editing interface." },
+  { icon: <FeatIconSave />, title: "Auto-Save", desc: "Never lose your work with real-time persistence powered by Convex." },
+  { icon: <FeatIconLock />, title: "Finalize & Lock", desc: "Lock completed journals to prevent accidental changes." },
 ];
 
 const steps = [
@@ -188,7 +171,8 @@ export function Home() {
               style={{ transformOrigin: "center" }}
             >
               <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-              ✨ Powered by Gemini AI &amp; GitHub
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-sky-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 10l5.91-1.74z"/></svg>
+              Powered by Gemini AI &amp; GitHub
             </span>
 
             <h1 className="hero-anim text-5xl font-extrabold tracking-tight text-sky-900 sm:text-6xl leading-tight opacity-0">
@@ -274,7 +258,7 @@ export function Home() {
                 {/* Background glow on hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-sky-50/0 to-indigo-50/0 group-hover:from-sky-50/60 group-hover:to-indigo-50/60 transition-all duration-300 rounded-2xl" />
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 flex items-center justify-center text-2xl mb-4 shadow-sm">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 flex items-center justify-center mb-4 shadow-sm">
                     {icon}
                   </div>
                   <h3 className="font-bold text-sky-900 text-lg mb-2">{title}</h3>

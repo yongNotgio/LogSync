@@ -114,17 +114,17 @@ export function Dashboard() {
     <div className="min-h-screen bg-white">
 
       {/* ── Portal top bar ── */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4">
+        <div className="mx-auto max-w-7xl flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Portal › Dashboard</p>
-            <h1 className="text-2xl font-extrabold text-slate-800">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800">
               Good morning,{" "}
               <span className="bg-gradient-to-r from-sky-500 to-indigo-600 bg-clip-text text-transparent">{user?.username}</span>
             </h1>
           </div>
           {/* Date picker */}
-          <label className="relative cursor-pointer">
+          <label className="relative cursor-pointer flex-shrink-0">
             <input
               type="date"
               value={selectedDate}
@@ -132,60 +132,59 @@ export function Dashboard() {
               max={getTodayString()}
               className="opacity-0 absolute inset-0 w-full cursor-pointer"
             />
-            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm hover:border-sky-300 hover:bg-sky-50 transition-colors pointer-events-none">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm text-slate-700 shadow-sm hover:border-sky-300 hover:bg-sky-50 transition-colors pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-sky-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              <span className="font-semibold">{selectedDate === today ? "Today" : selectedDate}</span>
-              <span className="text-slate-400 text-xs hidden sm:inline">— {formatDate(selectedDate)}</span>
+              <span className="font-semibold hidden sm:inline">{formatDate(selectedDate)}</span>
+              <span className="font-semibold sm:hidden">{new Date(selectedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
             </div>
           </label>
         </div>
       </div>
 
-      {/* ── 3-column body ── */}
-      <div className="mx-auto max-w-7xl px-6 py-6 flex gap-6 items-start">
+      {/* ── Body ── */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
-        {/* ── LEFT column: Robot image ── */}
-        <div className="w-60 flex-shrink-0 flex flex-col gap-4">
-
-          {/* Robot illustration */}
-          <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-indigo-50 border border-slate-200 overflow-hidden flex items-end justify-center pt-4 shadow-sm">
-            <img
-              src={robotImg}
-              alt="Dashboard assistant"
-              className="w-full object-contain select-none"
-              draggable={false}
-            />
-          </div>
+        {/* Stat pills — always at the top */}
+        <div ref={cardsRef} className="grid grid-cols-3 gap-3 sm:gap-4">
+          {[
+            { label: "Total Journals", value: totalJournals, Icon: IconBook, color: "from-sky-400 to-sky-600" },
+            { label: "Finalized", value: finalizedCount, Icon: IconCheck, color: "from-emerald-400 to-emerald-600" },
+            { label: "Drafts", value: draftCount, Icon: IconEdit, color: "from-amber-400 to-orange-500" },
+          ].map(({ label, value, Icon, color }) => (
+            <div key={label} className="dash-card rounded-2xl bg-white border border-slate-200 shadow-sm p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
+              <div className={`w-8 h-8 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
+                <Icon />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-extrabold text-slate-800 tabular-nums">{value}</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{label}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* ── CENTER: Stat cards + Commits table ── */}
-        <div className="flex-1 min-w-0 space-y-5">
+        {/* ── 3-column body ── */}
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 items-start">
 
-          {/* Stat pills */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: "Total Journals", value: totalJournals, Icon: IconBook, color: "from-sky-400 to-sky-600" },
-              { label: "Finalized", value: finalizedCount, Icon: IconCheck, color: "from-emerald-400 to-emerald-600" },
-              { label: "Drafts", value: draftCount, Icon: IconEdit, color: "from-amber-400 to-orange-500" },
-            ].map(({ label, value, Icon, color }) => (
-              <div key={label} className="dash-card rounded-2xl bg-white border border-slate-200 shadow-sm p-5 flex items-center gap-4">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
-                  <Icon />
-                </div>
-                <div>
-                  <p className="text-2xl font-extrabold text-slate-800 tabular-nums">{value}</p>
-                  <p className="text-xs text-slate-400 font-medium">{label}</p>
-                </div>
-              </div>
-            ))}
+          {/* ── LEFT column: Robot image (desktop only) ── */}
+          <div className="hidden lg:flex w-60 flex-shrink-0 flex-col gap-4">
+            <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-indigo-50 border border-slate-200 overflow-hidden flex items-end justify-center pt-4 shadow-sm">
+              <img
+                src={robotImg}
+                alt="Dashboard assistant"
+                className="w-full object-contain select-none"
+                draggable={false}
+              />
+            </div>
           </div>
 
-          {/* Commits table */}
+          {/* ── CENTER: Commits table ── */}
+          <div className="flex-1 min-w-0 space-y-4 sm:space-y-5 w-full">
           {cachedCommits !== undefined && (
             <div ref={commitsRef} className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
                   <div className="w-2 h-2 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500" />
                   <h2 className="font-bold text-slate-700 text-sm">
@@ -208,7 +207,7 @@ export function Dashboard() {
               </div>
 
               {cachedCommits.length === 0 ? (
-                <div className="py-14 text-center">
+                <div className="py-10 sm:py-14 px-4 text-center">
                   <div className="flex justify-center mb-3"><IconInbox /></div>
                   <p className="text-slate-400 text-sm mb-4">
                     No commits found for {selectedDate === today ? "today" : "this date"}.
@@ -222,13 +221,13 @@ export function Dashboard() {
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
+                <div className="divide-y divide-slate-100 max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                   {cachedCommits.map((commit) => {
                     const [title, ...rest] = commit.message.split("\n");
                     const description = rest.join("\n").trim();
                     return (
-                      <div key={commit.sha} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50/80 transition-colors">
-                        <span className="font-mono text-[11px] text-indigo-500 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg flex-shrink-0 select-all">
+                      <div key={commit.sha} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 hover:bg-slate-50/80 transition-colors">
+                        <span className="font-mono text-[11px] text-indigo-500 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg self-start select-all">
                           {commit.sha.slice(0, 7)}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -239,7 +238,7 @@ export function Dashboard() {
                         </div>
                         <div className="flex items-center gap-3 flex-shrink-0 text-xs text-slate-400">
                           <span className="font-medium hidden lg:inline">{commit.repo.name}</span>
-                          <span className="hidden lg:inline">
+                          <span className="hidden sm:inline">
                             {new Date(commit.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                           <span className="text-emerald-600 font-mono">+{commit.additions}</span>
@@ -252,19 +251,19 @@ export function Dashboard() {
               )}
             </div>
           )}
-        </div>
+          </div>
 
-        {/* ── RIGHT column: Today's Journal + Recent Journals ── */}
-        <div className="w-68 flex-shrink-0 space-y-4" style={{ width: "17rem" }}>
+          {/* ── RIGHT column: Today's Journal + Recent Journals ── */}
+          <div className="w-full lg:w-72 lg:flex-shrink-0 space-y-4">
 
           {/* Today's Journal status card */}
-          <div ref={cardsRef} className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-slate-700">
                 {selectedDate === today ? "Today's Journal" : "Journal"}
               </h2>
               {selectedJournal?.status === "finalized" && (
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">✓ Final</span>
+                <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold"><svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Final</span>
               )}
               {selectedJournal?.status === "draft" && (
                 <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">Draft</span>
@@ -368,6 +367,7 @@ export function Dashboard() {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );

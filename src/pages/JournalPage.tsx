@@ -418,67 +418,69 @@ export function JournalPage() {
   const isToday = date === getTodayString();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 bg-white min-h-screen">
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:py-8 bg-white min-h-screen">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-extrabold text-sky-900">
-              {isToday ? "Today's Journal" : "Journal Entry"}
-            </h1>
-            {isFinalized ? (
-              <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full font-semibold">
-                <IconShield /> Finalized
-              </span>
-            ) : journal ? (
-              <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full font-semibold">
-                Draft
-              </span>
-            ) : null}
+      <div className="flex flex-col gap-4 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-sky-900">
+                {isToday ? "Today's Journal" : "Journal Entry"}
+              </h1>
+              {isFinalized ? (
+                <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 sm:px-3 py-1 rounded-full font-semibold">
+                  <IconShield /> Finalized
+                </span>
+              ) : journal ? (
+                <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 sm:px-3 py-1 rounded-full font-semibold">
+                  Draft
+                </span>
+              ) : null}
+            </div>
+            <p className="text-slate-500 text-sm">{formatDate(date)}</p>
           </div>
-          <p className="text-slate-500 text-sm">{formatDate(date)}</p>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <input
-            type="date"
-            value={date}
-            onChange={handleDateChange}
-            max={getTodayString()}
-            className="rounded-xl border border-sky-200 bg-white px-4 py-2 text-sm text-sky-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
-          />
+          <div className="flex items-center gap-3">
+            <input
+              type="date"
+              value={date}
+              onChange={handleDateChange}
+              max={getTodayString()}
+              className="rounded-xl border border-sky-200 bg-white px-3 sm:px-4 py-2 text-sm text-sky-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 w-full sm:w-auto"
+            />
+          </div>
         </div>
       </div>
 
       {/* ── Error ── */}
       {error && (
-        <div className="mb-6 flex items-start gap-3 rounded-2xl bg-red-50 border border-red-200 px-5 py-4">
+        <div className="mb-4 sm:mb-6 flex items-start gap-3 rounded-2xl bg-red-50 border border-red-200 px-4 sm:px-5 py-3 sm:py-4">
           <IconAlert />
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="font-semibold text-red-800 text-sm">Something went wrong</p>
-            <p className="text-sm text-red-600 mt-0.5">{error}</p>
+            <p className="text-sm text-red-600 mt-0.5 break-words">{error}</p>
           </div>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 transition-colors">
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 transition-colors flex-shrink-0">
             <IconClose />
           </button>
         </div>
       )}
 
       {/* ── Action Buttons ── */}
-      <div className="flex flex-wrap gap-3 mb-8">
+      <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
         {!hasBlocks && (
           <>
             <button
               onClick={handleFetchCommits}
               disabled={isFetching}
-              className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 hover:border-sky-300 disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 hover:border-sky-300 disabled:opacity-50 transition-all"
             >
               {isFetching ? <><LoadingInline /> Fetching…</> : <><IconDownload /> Fetch Commits</>}
             </button>
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-5 py-2.5 text-sm font-semibold shadow-lg shadow-sky-200 hover:scale-105 disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold shadow-lg shadow-sky-200 hover:scale-105 disabled:opacity-50 transition-all"
             >
               {isGenerating ? <><LoadingInline /> Generating…</> : <><IconSparkle /> Generate Journal</>}
             </button>
@@ -490,13 +492,13 @@ export function JournalPage() {
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 disabled:opacity-50 transition-all"
             >
               {isGenerating ? <><LoadingInline /> Regenerating…</> : <><IconRefresh /> Regenerate</>}
             </button>
             <button
               onClick={handleFinalize}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 text-sm font-semibold shadow-lg shadow-emerald-200 hover:scale-105 transition-all"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold shadow-lg shadow-emerald-200 hover:scale-105 transition-all"
             >
               <IconLock /> Finalize Journal
             </button>
@@ -506,7 +508,7 @@ export function JournalPage() {
         {isFinalized && (
           <button
             onClick={handleUnfinalize}
-            className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 transition-all"
+            className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 transition-all"
           >
             <IconUnlock /> Reopen for Editing
           </button>
@@ -515,7 +517,7 @@ export function JournalPage() {
 
       {/* ── Stats ── */}
       {journal && (
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[{
             label: "Time Blocks",
             value: localBlocks?.length || 0,
@@ -535,12 +537,12 @@ export function JournalPage() {
             color: "from-indigo-400 to-indigo-600",
           },
           ].map(({ label, value, Icon, color }) => (
-            <div key={label} className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-5 flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-sm flex-shrink-0`}>
+            <div key={label} className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-sm flex-shrink-0`}>
                 <Icon />
               </div>
               <div>
-                <p className="text-2xl font-extrabold text-sky-900">{value}</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-sky-900">{value}</p>
                 <p className="text-xs text-slate-500 font-medium">{label}</p>
               </div>
             </div>
@@ -564,30 +566,30 @@ export function JournalPage() {
         <div className="space-y-5">
           {/* Fetched commits preview */}
           {commits && commits.length > 0 && (
-            <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-6">
-              <div className="flex items-center justify-between mb-5">
+            <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-5">
                 <div className="flex items-center gap-2">
                   <IconGitCommit />
-                  <h2 className="font-bold text-sky-900">Fetched Commits</h2>
+                  <h2 className="font-bold text-sky-900 text-sm sm:text-base">Fetched Commits</h2>
                   <span className="text-xs bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full font-semibold">{commits.length}</span>
                 </div>
               </div>
-              <div className="divide-y divide-sky-50 max-h-72 overflow-y-auto pr-1">
+              <div className="divide-y divide-sky-50 max-h-60 sm:max-h-72 overflow-y-auto pr-1">
                 {commits.map((commit) => {
                     const [title, ...rest] = commit.message.split("\n");
                     const description = rest.join("\n").trim();
                     const t = new Date(commit.timestamp);
                     const timeStr = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
                     return (
-                      <div key={commit.sha} className="py-2.5 flex items-center justify-between gap-3 hover:bg-sky-50/50 -mx-2 px-2 rounded-xl transition-colors">
+                      <div key={commit.sha} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 hover:bg-sky-50/50 -mx-2 px-2 rounded-xl transition-colors">
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm text-sky-900 truncate">{title}</p>
                           <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
                             <span className="font-medium text-slate-500">{commit.repo.name}</span>
                             <span>·</span>
                             <span>{timeStr}</span>
-                            <span>·</span>
-                            <span>{commit.changedFiles} files</span>
+                            <span className="hidden sm:inline">·</span>
+                            <span className="hidden sm:inline">{commit.changedFiles} files</span>
                             <span>·</span>
                             <span className="text-emerald-600 font-mono">+{commit.additions}</span>
                             <span className="text-red-500 font-mono">-{commit.deletions}</span>
@@ -597,11 +599,11 @@ export function JournalPage() {
                     );
                   })}
               </div>
-              <div className="mt-5 pt-5 border-t border-sky-50">
+              <div className="mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-sky-50">
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-sky-200 hover:scale-[1.02] disabled:opacity-50 transition-all"
+                  className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-5 py-2.5 sm:py-3 text-sm font-semibold shadow-lg shadow-sky-200 hover:scale-[1.02] disabled:opacity-50 transition-all"
                 >
                   {isGenerating ? <><LoadingInline /> Generating Journal…</> : <><IconSparkle /> Generate Journal from Commits</>}
                 </button>
@@ -611,26 +613,26 @@ export function JournalPage() {
 
           {/* Empty state */}
           {(!commits || commits.length === 0) && (
-            <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-16 text-center">
+            <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-10 sm:p-16 text-center">
               <div className="flex justify-center mb-5">
                 <IconFileText />
               </div>
-              <h2 className="text-xl font-bold text-sky-900 mb-2">No Journal Entry Yet</h2>
-              <p className="text-slate-500 text-sm max-w-sm mx-auto mb-8 leading-relaxed">
+              <h2 className="text-lg sm:text-xl font-bold text-sky-900 mb-2">No Journal Entry Yet</h2>
+              <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6 sm:mb-8 leading-relaxed">
                 Click "Generate Journal" to fetch your GitHub commits and create an AI-powered work journal for this day.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={handleFetchCommits}
                   disabled={isFetching}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-6 py-3 text-sm font-semibold shadow-sm hover:bg-sky-50 disabled:opacity-50 transition-all"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-6 py-2.5 sm:py-3 text-sm font-semibold shadow-sm hover:bg-sky-50 disabled:opacity-50 transition-all"
                 >
                   {isFetching ? <><LoadingInline /> Fetching…</> : <><IconDownload /> Fetch Commits</>}
                 </button>
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-6 py-3 text-sm font-semibold shadow-lg shadow-sky-200 hover:scale-105 disabled:opacity-50 transition-all"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-6 py-2.5 sm:py-3 text-sm font-semibold shadow-lg shadow-sky-200 hover:scale-105 disabled:opacity-50 transition-all"
                 >
                   {isGenerating ? <><LoadingInline /> Generating…</> : <><IconSparkle /> Generate Journal</>}
                 </button>
