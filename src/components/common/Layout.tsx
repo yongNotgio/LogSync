@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { GitHubLogin } from "@/components/auth/GitHubLogin";
@@ -39,6 +40,23 @@ function IconLogout() {
     </svg>
   );
 }
+function IconMenu() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+function IconClose() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
 
 const navLinks = [
   { to: "/dashboard", label: "Dashboard", Icon: IconGrid },
@@ -49,6 +67,7 @@ const navLinks = [
 function NavContent() {
   const location = useLocation();
   const { isAuthenticated, user, logout, isLoading } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -57,16 +76,16 @@ function NavContent() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6 gap-6">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 gap-4 sm:gap-6">
 
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
-          <img src={logoImg} alt="LogSync" className="w-18 h-18 rounded-lg object-contain group-hover:scale-110 transition-transform" />
-          <span className="font-extrabold text-lg text-sky-900 tracking-tight">LogSync</span>
-          <span className="text-[10px] bg-sky-100 text-sky-700 border border-sky-200/60 px-1.5 py-0.5 rounded-full font-bold leading-none">AI</span>
+          <img src={logoImg} alt="LogSync" className="w-12 h-12 sm:w-18 sm:h-18 rounded-lg object-contain group-hover:scale-110 transition-transform" />
+          <span className="font-extrabold text-base sm:text-lg text-sky-900 tracking-tight">LogSync</span>
+          <span className="text-[10px] bg-sky-100 text-sky-700 border border-sky-200/60 px-1.5 py-0.5 rounded-full font-bold leading-none hidden sm:inline">AI</span>
         </Link>
 
-        {/* Center: Tab strip */}
+        {/* Center: Tab strip (desktop) */}
         {isAuthenticated && (
           <nav className="hidden md:flex items-center gap-0.5 bg-slate-100 rounded-xl px-1.5 py-1.5 flex-1 max-w-md mx-auto">
             {navLinks.map(({ to, label }) => (
@@ -85,14 +104,14 @@ function NavContent() {
           </nav>
         )}
 
-        {/* Right: User */}
+        {/* Right: User + Mobile menu button */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {isLoading ? (
             <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100" />
           ) : isAuthenticated && user ? (
             <div className="flex items-center gap-2">
-              {/* Bell */}
-              <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-sky-50 hover:text-sky-600 transition-colors">
+              {/* Bell (desktop only) */}
+              <button className="hidden sm:flex w-8 h-8 rounded-full bg-slate-100 items-center justify-center text-slate-400 hover:bg-sky-50 hover:text-sky-600 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               </button>
               {/* Divider + avatar + name */}
@@ -104,22 +123,58 @@ function NavContent() {
                     {user.username?.[0]?.toUpperCase()}
                   </div>
                 )}
-                <span className="hidden sm:block text-sm font-semibold text-slate-700">{user.username}</span>
+                <span className="hidden lg:block text-sm font-semibold text-slate-700">{user.username}</span>
               </div>
               <button
                 onClick={logout}
                 title="Logout"
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                className="hidden sm:flex w-8 h-8 items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
               >
                 <IconLogout />
+              </button>
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+              >
+                {mobileMenuOpen ? <IconClose /> : <IconMenu />}
               </button>
             </div>
           ) : (
             <GitHubLogin />
           )}
         </div>
-
       </div>
+
+      {/* Mobile menu overlay */}
+      {isAuthenticated && mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200 bg-white">
+          <nav className="px-4 py-3 space-y-1">
+            {navLinks.map(({ to, label, Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  isActive(to)
+                    ? "bg-sky-50 text-sky-700 border border-sky-200"
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <Icon />
+                {label}
+              </Link>
+            ))}
+            <button
+              onClick={() => { logout(); setMobileMenuOpen(false); }}
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+            >
+              <IconLogout />
+              Sign Out
+            </button>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
@@ -131,13 +186,18 @@ export function Layout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="border-t border-slate-200 bg-white py-5">
-        <div className="mx-auto max-w-7xl px-6 flex items-center justify-between text-xs text-slate-400">
+      <footer className="border-t border-slate-200 bg-white py-4 sm:py-5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <img src={logoImg} alt="LogSync" className="w-9 h-9 rounded-md object-contain" />
-            <span className="font-semibold text-slate-600">LogSync AI</span> <span>@lansmasigon & @yongNotgio</span>
+            <img src={logoImg} alt="LogSync" className="w-7 h-7 sm:w-9 sm:h-9 rounded-md object-contain" />
+            <span className="font-semibold text-slate-600">LogSync AI</span> &copy; {new Date().getFullYear()} All rights reserved.
           </div>
-          <p>Automate your internship journal — powered by Gemini AI &amp; GitHub.</p>
+          <div className="flex items-center gap-3">
+            <span>By:</span>
+            <a href="https://github.com/yongNotgio" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-sky-600 transition-colors font-medium">@yongNotgio</a>
+            <span>&</span>
+            <a href="https://github.com/lansmasigon" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-sky-600 transition-colors font-medium">@lansmasigon</a>
+          </div>
         </div>
       </footer>
     </div>
