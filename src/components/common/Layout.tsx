@@ -75,7 +75,7 @@ function NavContent() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-slate-50 border-b border-slate-200 shadow-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 gap-4 sm:gap-6">
 
         {/* Left: Logo */}
@@ -148,7 +148,7 @@ function NavContent() {
 
       {/* Mobile menu overlay */}
       {isAuthenticated && mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white">
+        <div className="md:hidden border-t border-slate-200 bg-slate-50">
           <nav className="px-4 py-3 space-y-1">
             {navLinks.map(({ to, label, Icon }) => (
               <Link
@@ -181,12 +181,12 @@ function NavContent() {
 
 export function Layout() {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <NavContent />
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="border-t border-slate-200 bg-white py-4 sm:py-5">
+      <footer className="border-t border-slate-200 bg-slate-50 py-4 sm:py-5">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <img src={logoImg} alt="LogSync" className="w-7 h-7 sm:w-9 sm:h-9 rounded-md object-contain" />

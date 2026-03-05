@@ -209,7 +209,6 @@ export function Home() {
                 <span className="group-hover:translate-y-0.5 transition-transform inline-block">↓</span>
               </a>
             </div>
-
           </div>
 
           {/* Right: home illustration */}

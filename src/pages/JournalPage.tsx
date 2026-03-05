@@ -172,7 +172,7 @@ function IconBox() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="w-5 h-5 text-sky-500"
+      className="w-5 h-5"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -188,7 +188,7 @@ function IconTrendingUp() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="w-5 h-5 text-emerald-500"
+      className="w-5 h-5"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -205,7 +205,7 @@ function IconCode() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="w-5 h-5 text-indigo-500"
+      className="w-5 h-5"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -450,7 +450,7 @@ export function JournalPage() {
   const isToday = date === getTodayString();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 sm:py-8 bg-white min-h-screen">
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:py-8 bg-slate-50 min-h-screen">
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -559,33 +559,53 @@ export function JournalPage() {
 
       {/* ── Stats ── */}
       {journal && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
           {[{
             label: "Time Blocks",
             value: localBlocks?.length || 0,
             Icon: IconBox,
-            color: "from-sky-400 to-sky-600",
+            gradient: "from-sky-500 to-blue-600",
+            iconBg: "from-sky-50 to-blue-50",
+            iconColor: "text-sky-500",
+            shadow: "shadow-sky-200/60",
+            accent: "border-sky-200",
           },
           {
             label: "Commits",
             value: journal.totalCommits,
             Icon: IconTrendingUp,
-            color: "from-emerald-400 to-emerald-600",
+            gradient: "from-emerald-500 to-teal-600",
+            iconBg: "from-emerald-50 to-teal-50",
+            iconColor: "text-emerald-500",
+            shadow: "shadow-emerald-200/60",
+            accent: "border-emerald-200",
           },
           {
             label: "Lines Changed",
             value: journal.totalLinesChanged,
             Icon: IconCode,
-            color: "from-indigo-400 to-indigo-600",
+            gradient: "from-indigo-500 to-violet-600",
+            iconBg: "from-indigo-50 to-violet-50",
+            iconColor: "text-indigo-500",
+            shadow: "shadow-indigo-200/60",
+            accent: "border-indigo-200",
           },
-          ].map(({ label, value, Icon, color }) => (
-            <div key={label} className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-sm flex-shrink-0`}>
-                <Icon />
+          ].map(({ label, value, Icon, gradient, iconBg, iconColor, shadow, accent }) => (
+            <div key={label} className={`relative rounded-2xl bg-white border ${accent} shadow-lg ${shadow} p-5 sm:p-6 flex items-center gap-4 overflow-hidden group hover:-translate-y-0.5 transition-all duration-200`}>
+              {/* Top gradient accent bar */}
+              <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${gradient} rounded-t-2xl`} />
+              {/* Subtle background glow */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${iconBg} opacity-30 rounded-2xl`} />
+              {/* Icon */}
+              <div className={`relative flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${iconBg} border ${accent} flex items-center justify-center shadow-sm`}>
+                <div className={`${iconColor}`}>
+                  <Icon />
+                </div>
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-extrabold text-sky-900">{value}</p>
-                <p className="text-xs text-slate-500 font-medium">{label}</p>
+              {/* Text */}
+              <div className="relative">
+                <p className="text-2xl sm:text-3xl font-extrabold text-slate-800 leading-none">{value}</p>
+                <p className="text-xs text-slate-500 font-semibold mt-1 uppercase tracking-wide">{label}</p>
               </div>
             </div>
           ))}
@@ -594,7 +614,10 @@ export function JournalPage() {
 
       {/* ── Timeline / Empty states ── */}
       {hasBlocks ? (
-        <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 overflow-hidden">
+        <div
+          className="rounded-2xl bg-white border border-sky-100 overflow-hidden"
+          style={{ boxShadow: "0 8px 32px rgba(14,165,233,0.12), 0 2px 8px rgba(99,102,241,0.08)" }}
+        >
           <Timeline
             blocks={localBlocks}
             onBlockEdit={handleBlockEdit}

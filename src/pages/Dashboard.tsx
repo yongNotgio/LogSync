@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/common/Loading";
 import { getTodayString, formatDate, formatShortDate } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
-import { animate, stagger } from "animejs";
 import robotImg from "@/assets/dashboardrobot.png";
 
 function IconBook() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>; }
@@ -34,7 +33,6 @@ export function Dashboard() {
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(getTodayString());
-  const cardsRef = useRef<HTMLDivElement>(null);
   const commitsRef = useRef<HTMLDivElement>(null);
 
   const today = getTodayString();
@@ -59,21 +57,6 @@ export function Dashboard() {
   useEffect(() => {
     setFetchError(null);
   }, [selectedDate]);
-
-  useEffect(() => {
-    if (cardsRef.current) {
-      const cards = cardsRef.current.querySelectorAll(".dash-card");
-      // Make visible immediately to avoid deadspace, then animate
-      cards.forEach((c) => ((c as HTMLElement).style.opacity = "1"));
-      animate(cards, {
-        translateY: [30, 0],
-        opacity: [0, 1],
-        duration: 600,
-        ease: "outExpo",
-        delay: stagger(80, { start: 100 }),
-      });
-    }
-  }, []);
 
   if (authLoading) return <LoadingScreen message="Loading dashboard..." />;
 
@@ -111,10 +94,10 @@ export function Dashboard() {
   const draftCount = journals?.filter((j: Journal) => j.status === "draft").length ?? 0;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
 
       {/* ── Portal top bar ── */}
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4">
+      <div className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Portal › Dashboard</p>
@@ -144,45 +127,83 @@ export function Dashboard() {
       </div>
 
       {/* ── Body ── */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
-
-        {/* Stat pills — always at the top */}
-        <div ref={cardsRef} className="grid grid-cols-3 gap-3 sm:gap-4">
-          {[
-            { label: "Total Journals", value: totalJournals, Icon: IconBook, color: "from-sky-400 to-sky-600" },
-            { label: "Finalized", value: finalizedCount, Icon: IconCheck, color: "from-emerald-400 to-emerald-600" },
-            { label: "Drafts", value: draftCount, Icon: IconEdit, color: "from-amber-400 to-orange-500" },
-          ].map(({ label, value, Icon, color }) => (
-            <div key={label} className="dash-card rounded-2xl bg-white border border-slate-200 shadow-sm p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
-              <div className={`w-8 h-8 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
-                <Icon />
-              </div>
-              <div className="min-w-0">
-                <p className="text-lg sm:text-2xl font-extrabold text-slate-800 tabular-nums">{value}</p>
-                <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 sm:py-6">
 
         {/* ── 3-column body ── */}
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 items-start">
 
           {/* ── LEFT column: Robot image (desktop only) ── */}
-          <div className="hidden lg:flex w-60 flex-shrink-0 flex-col gap-4">
-            <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-indigo-50 border border-slate-200 overflow-hidden flex items-end justify-center pt-4 shadow-sm">
+          <div className="hidden lg:flex w-74 flex-shrink-0 flex-col gap-4">
+            <div className="flex items-end justify-center pt-2 relative">
+              {/* Blue glow blob behind robot */}
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-56 h-20 bg-sky-400/20 blur-2xl rounded-full pointer-events-none" />
               <img
                 src={robotImg}
                 alt="Dashboard assistant"
-                className="w-full object-contain select-none"
+                className="relative w-full object-contain select-none drop-shadow-[0_24px_48px_rgba(2,132,199,0.28)]"
                 draggable={false}
+                style={{ maxWidth: "360px" }}
               />
             </div>
           </div>
 
-          {/* ── CENTER: Commits table ── */}
+          {/* ── CENTER: Stat cards + Commits table ── */}
           <div className="flex-1 min-w-0 space-y-4 sm:space-y-5 w-full">
-            <div ref={commitsRef} className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+
+            {/* Stat cards — inside center column only */}
+            <div className="grid grid-cols-3 gap-3 sm:gap-4" style={{ isolation: "isolate" }}>
+              {[
+                {
+                  label: "Total Journals",
+                  value: totalJournals,
+                  Icon: IconBook,
+                  iconBg: "from-sky-50 to-blue-50",
+                  iconColor: "text-sky-500",
+                  border: "border-sky-100",
+                  shadow: "rgba(14,165,233,0.15)",
+                  bar: "from-sky-500 to-blue-600",
+                },
+                {
+                  label: "Finalized",
+                  value: finalizedCount,
+                  Icon: IconCheck,
+                  iconBg: "from-emerald-50 to-teal-50",
+                  iconColor: "text-emerald-500",
+                  border: "border-emerald-100",
+                  shadow: "rgba(16,185,129,0.15)",
+                  bar: "from-emerald-500 to-teal-600",
+                },
+                {
+                  label: "Drafts",
+                  value: draftCount,
+                  Icon: IconEdit,
+                  iconBg: "from-amber-50 to-orange-50",
+                  iconColor: "text-amber-500",
+                  border: "border-amber-100",
+                  shadow: "rgba(245,158,11,0.15)",
+                  bar: "from-amber-500 to-orange-500",
+                },
+              ].map(({ label, value, Icon, iconBg, iconColor, border, shadow, bar }) => (
+                <div
+                  key={label}
+                  className={`dash-card relative rounded-2xl bg-white border ${border} overflow-hidden flex items-center gap-3 sm:gap-4 p-4 sm:p-5 hover:-translate-y-0.5 transition-all duration-200`}
+                  style={{ boxShadow: `0 6px 24px ${shadow}, 0 1px 4px rgba(0,0,0,0.05)` }}
+                >
+                  {/* Top gradient accent bar */}
+                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${bar}`} />
+                  {/* Icon */}
+                  <div className={`flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br ${iconBg} border ${border} flex items-center justify-center shadow-sm`}>
+                    <span className={iconColor}><Icon /></span>
+                  </div>
+                  {/* Text */}
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-extrabold text-slate-800 tabular-nums leading-none">{value}</p>
+                    <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-wide mt-1 truncate">{label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div ref={commitsRef} className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden relative" style={{ zIndex: 0 }}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
                   <div className="w-2 h-2 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500" />

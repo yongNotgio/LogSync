@@ -22,18 +22,18 @@ function CategoryIcon({ category }: { category: BlockCategory }) {
   }
 }
 
-// Themed color map: accent bar color + background + border + text
-const CATEGORY_THEME: Record<string, { bar: string; bg: string; border: string; badge: string; label: string }> = {
-  "bg-sky-500":     { bar: "bg-sky-500",     bg: "bg-sky-50",     border: "border-sky-200",     badge: "bg-sky-100 text-sky-700 border-sky-200",     label: "text-sky-700" },
-  "bg-indigo-500":  { bar: "bg-indigo-500",  bg: "bg-indigo-50",  border: "border-indigo-200",  badge: "bg-indigo-100 text-indigo-700 border-indigo-200",  label: "text-indigo-700" },
-  "bg-rose-500":    { bar: "bg-rose-500",    bg: "bg-rose-50",    border: "border-rose-200",    badge: "bg-rose-100 text-rose-700 border-rose-200",    label: "text-rose-700" },
-  "bg-violet-500":  { bar: "bg-violet-500",  bg: "bg-violet-50",  border: "border-violet-200",  badge: "bg-violet-100 text-violet-700 border-violet-200",  label: "text-violet-700" },
-  "bg-emerald-500": { bar: "bg-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200", badge: "bg-emerald-100 text-emerald-700 border-emerald-200", label: "text-emerald-700" },
-  "bg-amber-500":   { bar: "bg-amber-500",   bg: "bg-amber-50",   border: "border-amber-200",   badge: "bg-amber-100 text-amber-700 border-amber-200",   label: "text-amber-700" },
-  "bg-cyan-500":    { bar: "bg-cyan-500",    bg: "bg-cyan-50",    border: "border-cyan-200",    badge: "bg-cyan-100 text-cyan-700 border-cyan-200",    label: "text-cyan-700" },
-  "bg-blue-500":    { bar: "bg-blue-500",    bg: "bg-blue-50",    border: "border-blue-200",    badge: "bg-blue-100 text-blue-700 border-blue-200",    label: "text-blue-700" },
-  "bg-fuchsia-500": { bar: "bg-fuchsia-500", bg: "bg-fuchsia-50", border: "border-fuchsia-200", badge: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200", label: "text-fuchsia-700" },
-  "bg-slate-400":   { bar: "bg-slate-400",   bg: "bg-slate-50",   border: "border-slate-200",   badge: "bg-slate-100 text-slate-600 border-slate-200",   label: "text-slate-600" },
+// Themed color map — richer shadows + gradients
+const CATEGORY_THEME: Record<string, { bar: string; bg: string; border: string; badge: string; label: string; shadow: string; gradient: string }> = {
+  "bg-sky-500":     { bar: "bg-sky-500",     bg: "bg-sky-50/80",     border: "border-sky-200",     badge: "bg-sky-100 text-sky-700 border-sky-200",     label: "text-sky-700",     shadow: "rgba(14,165,233,0.22)",   gradient: "from-sky-500 to-blue-500" },
+  "bg-indigo-500":  { bar: "bg-indigo-500",  bg: "bg-indigo-50/80",  border: "border-indigo-200",  badge: "bg-indigo-100 text-indigo-700 border-indigo-200",  label: "text-indigo-700",  shadow: "rgba(99,102,241,0.22)",   gradient: "from-indigo-500 to-violet-500" },
+  "bg-rose-500":    { bar: "bg-rose-500",    bg: "bg-rose-50/80",    border: "border-rose-200",    badge: "bg-rose-100 text-rose-700 border-rose-200",    label: "text-rose-700",    shadow: "rgba(244,63,94,0.22)",    gradient: "from-rose-500 to-pink-500" },
+  "bg-violet-500":  { bar: "bg-violet-500",  bg: "bg-violet-50/80",  border: "border-violet-200",  badge: "bg-violet-100 text-violet-700 border-violet-200",  label: "text-violet-700",  shadow: "rgba(139,92,246,0.22)",   gradient: "from-violet-500 to-purple-500" },
+  "bg-emerald-500": { bar: "bg-emerald-500", bg: "bg-emerald-50/80", border: "border-emerald-200", badge: "bg-emerald-100 text-emerald-700 border-emerald-200", label: "text-emerald-700", shadow: "rgba(16,185,129,0.22)",   gradient: "from-emerald-500 to-teal-500" },
+  "bg-amber-500":   { bar: "bg-amber-500",   bg: "bg-amber-50/80",   border: "border-amber-200",   badge: "bg-amber-100 text-amber-700 border-amber-200",   label: "text-amber-700",   shadow: "rgba(245,158,11,0.22)",   gradient: "from-amber-500 to-orange-500" },
+  "bg-cyan-500":    { bar: "bg-cyan-500",    bg: "bg-cyan-50/80",    border: "border-cyan-200",    badge: "bg-cyan-100 text-cyan-700 border-cyan-200",    label: "text-cyan-700",    shadow: "rgba(6,182,212,0.22)",    gradient: "from-cyan-500 to-sky-500" },
+  "bg-blue-500":    { bar: "bg-blue-500",    bg: "bg-blue-50/80",    border: "border-blue-200",    badge: "bg-blue-100 text-blue-700 border-blue-200",    label: "text-blue-700",    shadow: "rgba(59,130,246,0.22)",   gradient: "from-blue-500 to-indigo-500" },
+  "bg-fuchsia-500": { bar: "bg-fuchsia-500", bg: "bg-fuchsia-50/80", border: "border-fuchsia-200", badge: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200", label: "text-fuchsia-700", shadow: "rgba(217,70,239,0.22)",   gradient: "from-fuchsia-500 to-pink-500" },
+  "bg-slate-400":   { bar: "bg-slate-400",   bg: "bg-slate-50/80",   border: "border-slate-200",   badge: "bg-slate-100 text-slate-600 border-slate-200",   label: "text-slate-600",   shadow: "rgba(148,163,184,0.22)",  gradient: "from-slate-400 to-slate-500" },
 };
 
 // Map old CATEGORY_COLORS values to new theme colors
@@ -86,32 +86,39 @@ export function TimeBlock({ block, onEdit, onDelete, isEditable, hourHeight }: T
   return (
     <>
       <div
-        className={`absolute left-0 right-0 mx-1 rounded-xl border ${theme.bg} ${theme.border} shadow-sm overflow-hidden transition-shadow hover:shadow-md ${isEditable ? "cursor-pointer" : ""}`}
-        style={{ top: `${top}px`, minHeight: `${timeHeight}px` }}
+        className={`absolute left-2 right-2 rounded-xl border ${theme.bg} ${theme.border} overflow-hidden transition-all duration-200 hover:-translate-y-px ${isEditable ? "cursor-pointer" : ""}`}
+        style={{
+          top: `${top}px`,
+          minHeight: `${timeHeight}px`,
+          boxShadow: `0 4px 16px ${theme.shadow}, 0 1px 4px rgba(0,0,0,0.06)`,
+        }}
         onClick={() => isEditable && setIsEditing(true)}
         role={isEditable ? "button" : undefined}
         tabIndex={isEditable ? 0 : undefined}
         onKeyDown={(e) => { if (isEditable && (e.key === "Enter" || e.key === " ")) setIsEditing(true); }}
       >
-        {/* Accent bar */}
-        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${theme.bar}`} />
+        {/* Gradient accent bar — left side */}
+        <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl bg-gradient-to-b ${theme.gradient}`} />
 
-        <div className="pl-3 pr-2 py-1.5 flex flex-col overflow-hidden">
+        {/* Subtle inner glow at top */}
+        <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white/40 to-transparent rounded-t-xl pointer-events-none" />
+
+        <div className="pl-4 pr-2 py-2 flex flex-col overflow-hidden">
           <div className="flex items-start gap-1.5 min-w-0">
             {/* Category icon badge */}
-            <span className={`flex-shrink-0 flex items-center justify-center w-5 h-5 rounded ${theme.badge} border mt-0.5`}>
+            <span className={`flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-md ${theme.badge} border mt-0.5 shadow-sm`}>
               <CategoryIcon category={block.category as BlockCategory} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className={`text-xs font-bold ${theme.label} leading-none whitespace-nowrap`}>
+              <p className={`text-[10px] sm:text-xs font-bold ${theme.label} leading-none whitespace-nowrap tabular-nums`}>
                 {block.start} – {block.end}
               </p>
-              <p className="text-sm font-bold text-slate-800 leading-snug mt-0.5 truncate">{block.task}</p>
+              <p className="text-xs sm:text-sm font-bold text-slate-800 leading-snug mt-0.5 truncate">{block.task}</p>
               {timeHeight >= 55 && block.description && (
-                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{block.description}</p>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{block.description}</p>
               )}
               {timeHeight >= 90 && block.learning && (
-                <p className={`text-xs mt-1 italic border-t ${theme.border} pt-1 ${theme.label} opacity-80 line-clamp-2`}>
+                <p className={`text-xs mt-1.5 italic border-t ${theme.border} pt-1.5 ${theme.label} opacity-80 line-clamp-2`}>
                   <span className="not-italic font-semibold">Learning:</span> {block.learning}
                 </p>
               )}
@@ -120,12 +127,12 @@ export function TimeBlock({ block, onEdit, onDelete, isEditable, hourHeight }: T
         </div>
 
         {/* Badges top-right */}
-        <div className="absolute top-1 right-1 flex items-center gap-0.5">
+        <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5">
           {block.isEdited && (
-            <span className={`text-[9px] font-semibold px-1 py-0.5 rounded-full border ${theme.badge}`}>Edited</span>
+            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border shadow-sm ${theme.badge}`}>Edited</span>
           )}
           {block.source.type === "commit" && (
-            <span className="text-[9px] font-semibold px-1 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200">
+            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200 shadow-sm">
               commit
             </span>
           )}

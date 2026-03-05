@@ -81,7 +81,7 @@ export function History() {
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:py-10 bg-white min-h-screen">
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:py-10 bg-slate-50 min-h-screen">
       {/* ── Header ── */}
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
