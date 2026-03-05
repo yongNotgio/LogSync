@@ -218,6 +218,26 @@ function IconCode() {
     </svg>
   );
 }
+function IconTrash() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-4 h-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  );
+}
 function IconShield() {
   return (
     <svg
@@ -292,6 +312,7 @@ export function JournalPage() {
   const saveJournal = useMutation(api.journals.saveJournal);
   const updateBlock = useMutation(api.journals.updateBlock);
   const deleteBlock = useMutation(api.journals.deleteBlock);
+  const deleteJournal = useMutation(api.journals.deleteJournal);
   const finalizeJournal = useMutation(api.journals.finalizeJournal);
   const unfinalizeJournal = useMutation(api.journals.unfinalizeJournal);
 
@@ -376,6 +397,17 @@ export function JournalPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!journal?._id) return;
+    if (!window.confirm("Are you sure you want to delete this journal? This action cannot be undone.")) return;
+    try {
+      await deleteJournal({ journalId: journal._id });
+      navigate("/history");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete journal");
+    }
+  };
+
   const handleFinalize = async () => {
     if (!journal?._id) return;
     try {
@@ -448,6 +480,16 @@ export function JournalPage() {
               max={getTodayString()}
               className="rounded-xl border border-sky-200 bg-white px-3 sm:px-4 py-2 text-sm text-sky-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 w-full sm:w-auto"
             />
+            {journal && (
+              <button
+                onClick={handleDelete}
+                title="Delete journal"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white text-red-500 px-3 py-2 text-sm font-semibold hover:bg-red-50 hover:border-red-300 transition-all"
+              >
+                <IconTrash />
+                <span className="hidden sm:inline">Delete</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -611,15 +653,37 @@ export function JournalPage() {
             </div>
           )}
 
-          {/* Empty state */}
-          {(!commits || commits.length === 0) && (
+          {/* Empty state — not yet fetched */}
+          {commits === undefined && (
+            <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-10 sm:p-16 text-center">
+              <div className="flex justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-sky-900 mb-2">No Commits Fetched Yet</h2>
+              <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6 sm:mb-8 leading-relaxed">
+                Fetch your GitHub commits first, then generate an AI-powered work journal for this day.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={handleFetchCommits}
+                  disabled={isFetching}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 text-sky-700 px-6 py-2.5 sm:py-3 text-sm font-semibold shadow-sm hover:bg-sky-100 disabled:opacity-50 transition-all"
+                >
+                  {isFetching ? <><LoadingInline /> Fetching…</> : <><IconDownload /> Fetch Commits</>}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Empty state — fetched but no commits found */}
+          {commits !== undefined && commits.length === 0 && (
             <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-10 sm:p-16 text-center">
               <div className="flex justify-center mb-5">
                 <IconFileText />
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-sky-900 mb-2">No Journal Entry Yet</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-sky-900 mb-2">No Commits Found</h2>
               <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6 sm:mb-8 leading-relaxed">
-                Click "Generate Journal" to fetch your GitHub commits and create an AI-powered work journal for this day.
+                No GitHub commits were found for this date. You can still generate a journal manually or try fetching again.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button

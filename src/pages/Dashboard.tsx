@@ -182,7 +182,6 @@ export function Dashboard() {
 
           {/* ── CENTER: Commits table ── */}
           <div className="flex-1 min-w-0 space-y-4 sm:space-y-5 w-full">
-          {cachedCommits !== undefined && (
             <div ref={commitsRef} className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
@@ -190,13 +189,13 @@ export function Dashboard() {
                   <h2 className="font-bold text-slate-700 text-sm">
                     {selectedDate === today ? "Today's Commits" : "Commits"}
                   </h2>
-                  {cachedCommits.length > 0 && (
+                  {cachedCommits && cachedCommits.length > 0 && (
                     <span className="text-xs bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full font-semibold tabular-nums">
                       {cachedCommits.length}
                     </span>
                   )}
                 </div>
-                {cachedCommits.length > 0 && (
+                {cachedCommits && cachedCommits.length > 0 && (
                   <Link
                     to={`/journal/${selectedDate}`}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 text-white text-xs font-semibold shadow-sm hover:scale-105 transition-transform"
@@ -206,7 +205,23 @@ export function Dashboard() {
                 )}
               </div>
 
-              {cachedCommits.length === 0 ? (
+              {cachedCommits === undefined ? (
+                <div className="py-10 sm:py-14 px-4 text-center">
+                  <div className="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <p className="text-slate-500 text-sm font-medium mb-1">No commits fetched yet</p>
+                  <p className="text-slate-400 text-xs mb-4">Click the button below to pull your GitHub commits for this date.</p>
+                  <button
+                    onClick={handleFetchCommits}
+                    disabled={isFetching}
+                    className="rounded-xl border border-sky-200 bg-sky-50 text-sky-700 px-5 py-2 text-sm font-semibold hover:bg-sky-100 disabled:opacity-50 transition-colors"
+                  >
+                    {isFetching ? "Fetching…" : "Fetch Commits"}
+                  </button>
+                  {fetchError && <p className="mt-3 text-xs text-red-500 font-medium">{fetchError}</p>}
+                </div>
+              ) : cachedCommits.length === 0 ? (
                 <div className="py-10 sm:py-14 px-4 text-center">
                   <div className="flex justify-center mb-3"><IconInbox /></div>
                   <p className="text-slate-400 text-sm mb-4">
@@ -250,7 +265,6 @@ export function Dashboard() {
                 </div>
               )}
             </div>
-          )}
           </div>
 
           {/* ── RIGHT column: Today's Journal + Recent Journals ── */}

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +14,7 @@ type Journal = Doc<"journals">;
 function IconLock() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>; }
 function IconInbox() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 text-sky-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>; }
 function IconArrow() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>; }
+function IconTrash() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>; }
 
 export function History() {
   const { isAuthenticated, isLoading: authLoading, userId } = useAuth();
@@ -24,6 +25,19 @@ export function History() {
     api.journals.listJournals,
     userId ? { userId, limit: 100 } : "skip"
   );
+
+  const deleteJournal = useMutation(api.journals.deleteJournal);
+
+  const handleDelete = async (e: React.MouseEvent, journalId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this journal? This cannot be undone.")) return;
+    try {
+      await deleteJournal({ journalId: journalId as Parameters<typeof deleteJournal>[0]["journalId"] });
+    } catch (err) {
+      console.error("Failed to delete journal", err);
+    }
+  };
 
   useEffect(() => {
     if (listRef.current) {
@@ -162,6 +176,13 @@ export function History() {
                 </div>
               </div>
               <span className="text-slate-300 group-hover:text-sky-400 transition-colors flex-shrink-0 hidden sm:block"><IconArrow /></span>
+              <button
+                onClick={(e) => handleDelete(e, journal._id)}
+                title="Delete journal"
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
+              >
+                <IconTrash />
+              </button>
             </Link>
           ))}
         </div>
