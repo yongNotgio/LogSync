@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { GitHubLogin } from "@/components/auth/GitHubLogin";
@@ -51,11 +51,33 @@ export function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLSpanElement>(null);
 
-  // Entrance animations
+  // Helper: observe a container and fire anime when it enters viewport
+  const observeSection = useCallback(
+    (
+      ref: React.RefObject<HTMLElement | null>,
+      animateFn: (el: HTMLElement) => void
+    ) => {
+      if (!ref.current) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            animateFn(entry.target as HTMLElement);
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.12 }
+      );
+      observer.observe(ref.current);
+      return observer;
+    },
+    []
+  );
+
   useEffect(() => {
-    // Badge pop-in
+    // Badge pop-in (immediate on mount)
     if (badgeRef.current) {
       animate(badgeRef.current, {
         scale: [0, 1],
@@ -66,42 +88,58 @@ export function Home() {
       });
     }
 
-    // Hero text cascade
+    // Hero — fires on mount (already in view)
     if (heroRef.current) {
       const els = heroRef.current.querySelectorAll(".hero-anim");
       animate(els, {
         translateY: [40, 0],
         opacity: [0, 1],
-        duration: 800,
+        duration: 900,
         ease: "outExpo",
-        delay: stagger(120, { start: 300 }),
+        delay: stagger(130, { start: 300 }),
       });
     }
 
-    // Feature cards stagger
-    if (featuresRef.current) {
-      const cards = featuresRef.current.querySelectorAll(".feature-card");
+    // Features — scroll-triggered
+    const featObs = observeSection(featuresRef, (el) => {
+      const cards = el.querySelectorAll(".feature-card");
       animate(cards, {
+        translateY: [60, 0],
+        opacity: [0, 1],
+        duration: 750,
+        ease: "outExpo",
+        delay: stagger(90, { start: 60 }),
+      });
+    });
+
+    // Steps — scroll-triggered
+    const stepsObs = observeSection(stepsRef, (el) => {
+      const stepEls = el.querySelectorAll(".step-item");
+      animate(stepEls, {
         translateY: [50, 0],
         opacity: [0, 1],
-        duration: 700,
+        duration: 750,
         ease: "outExpo",
-        delay: stagger(80, { start: 100 }),
+        delay: stagger(130, { start: 60 }),
       });
-    }
+    });
 
-    // Steps stagger
-    if (stepsRef.current) {
-      const stepEls = stepsRef.current.querySelectorAll(".step-item");
-      animate(stepEls, {
+    // CTA — scroll-triggered fade + rise
+    const ctaObs = observeSection(ctaRef, (el) => {
+      animate(el, {
         translateY: [40, 0],
         opacity: [0, 1],
-        duration: 700,
+        duration: 800,
         ease: "outExpo",
-        delay: stagger(120, { start: 100 }),
       });
-    }
-  }, []);
+    });
+
+    return () => {
+      featObs?.disconnect();
+      stepsObs?.disconnect();
+      ctaObs?.disconnect();
+    };
+  }, [observeSection]);
 
   // Card hover animation helper
   const handleCardEnter = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -287,7 +325,7 @@ export function Home() {
 
         {/* ── CTA ── */}
         <div className="mt-32 mb-8">
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600 p-px shadow-2xl shadow-sky-300/40">
+          <div ref={ctaRef} className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600 p-px shadow-2xl shadow-sky-300/40 opacity-0">
             <div className="relative rounded-3xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600 px-8 py-14 text-center overflow-hidden">
               {/* Decorative blobs */}
               <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />

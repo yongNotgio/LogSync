@@ -7,6 +7,7 @@ import { LoadingScreen } from "@/components/common/Loading";
 import { getTodayString, formatDate, formatShortDate } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { animate, stagger } from "animejs";
+import robotImg from "@/assets/dashboardrobot.png";
 
 function IconBook() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>; }
 function IconCheck() { return <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>; }
@@ -145,44 +146,17 @@ export function Dashboard() {
       {/* ── 3-column body ── */}
       <div className="mx-auto max-w-7xl px-6 py-6 flex gap-6 items-start">
 
-        {/* ── LEFT column: Profile card + Quick Actions ── */}
-        <div className="w-60 flex-shrink-0 space-y-4">
+        {/* ── LEFT column: Robot image ── */}
+        <div className="w-60 flex-shrink-0 flex flex-col gap-4">
 
-          {/* Profile card */}
-          <div className="rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 p-5 text-white shadow-lg shadow-sky-200/50">
-            <div className="flex items-center gap-3 mb-4">
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.username} className="w-12 h-12 rounded-xl object-cover ring-2 ring-white/30 flex-shrink-0" />
-              ) : (
-                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl font-black select-none flex-shrink-0">
-                  {user?.username?.[0]?.toUpperCase() ?? "U"}
-                </div>
-              )}
-              <div className="min-w-0">
-                <p className="font-bold text-sm leading-tight truncate">{user?.username}</p>
-                <p className="text-sky-200 text-xs mt-0.5">Developer</p>
-              </div>
-            </div>
-            <div className="pt-3 border-t border-white/20 flex justify-between text-xs">
-              <span className="text-sky-100">Date</span>
-              <span className="font-semibold">{formatDate(selectedDate).split(",")[0]}</span>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
-            <h2 className="text-sm font-bold text-slate-700 mb-3">Quick Actions</h2>
-            <div className="space-y-1.5">
-              {[
-                { to: `/journal/${today}`, Icon: IconPlus, label: "Create Today's Journal", color: "bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-100" },
-                { to: "/history", Icon: IconHistory, label: "View History", color: "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100" },
-              ].map(({ to, Icon, label, color }) => (
-                <Link key={to} to={to} className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl ${color} font-semibold text-xs transition-colors`}>
-                  <Icon />
-                  {label}
-                </Link>
-              ))}
-            </div>
+          {/* Robot illustration */}
+          <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-indigo-50 border border-slate-200 overflow-hidden flex items-end justify-center pt-4 shadow-sm">
+            <img
+              src={robotImg}
+              alt="Dashboard assistant"
+              className="w-full object-contain select-none"
+              draggable={false}
+            />
           </div>
         </div>
 
@@ -336,13 +310,28 @@ export function Dashboard() {
             )}
           </div>
 
+          {/* Quick Actions */}
+          <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
+            <h2 className="text-sm font-bold text-slate-700 mb-3">Quick Actions</h2>
+            <div className="space-y-1.5">
+              {[
+                { to: `/journal/${today}`, Icon: IconPlus, label: "Create Today's Journal", color: "bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-100" },
+                { to: "/history", Icon: IconHistory, label: "View History", color: "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100" },
+              ].map(({ to, Icon, label, color }) => (
+                <Link key={to} to={to} className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl ${color} font-semibold text-xs transition-colors`}>
+                  <Icon />
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
           {/* Recent Journals */}
           <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-700">Recent Journals</h2>
               <Link to="/history" className="text-xs text-sky-500 hover:text-indigo-600 font-semibold transition-colors">View all →</Link>
             </div>
-
             {journals === undefined ? (
               <div className="p-5">
                 <p className="text-sm text-slate-400 animate-pulse">Loading…</p>
