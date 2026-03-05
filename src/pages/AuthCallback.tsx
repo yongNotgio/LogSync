@@ -62,7 +62,7 @@ export function AuthCallback() {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <div className="card">
-          <div className="text-4xl mb-4">❌</div>
+          <div className="flex justify-center mb-4"><svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
           <h1 className="text-xl font-bold text-red-600 mb-2">
             Authentication Failed
           </h1>
