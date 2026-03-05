@@ -43,13 +43,13 @@ export function Timeline({
   }, [blocks, HOUR_HEIGHT]);
 
   return (
-    <div className="flex gap-0 p-4">
+    <div className="flex gap-0 p-2 sm:p-4 overflow-x-auto">
       {/* Time markers — only block start/end times */}
-      <div className="relative w-14 flex-shrink-0" style={{ height: `${timelineHeight}px` }}>
+      <div className="relative w-10 sm:w-14 flex-shrink-0" style={{ height: `${timelineHeight}px` }}>
         {timeLabels.map(([label, top]) => (
           <div
             key={label}
-            className="absolute right-2 text-xs font-semibold text-slate-400 leading-none"
+            className="absolute right-1 sm:right-2 text-[10px] sm:text-xs font-semibold text-slate-400 leading-none"
             style={{ top: `${top}px`, transform: "translateY(-50%)" }}
           >
             {label}
@@ -59,7 +59,7 @@ export function Timeline({
 
       {/* Blocks area */}
       <div
-        className="relative flex-1 border-l-2 border-sky-100"
+        className="relative flex-1 border-l-2 border-sky-100 min-w-[200px]"
         style={{ height: `${timelineHeight}px` }}
       >
         {/* Hour grid lines */}
