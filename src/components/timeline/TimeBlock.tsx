@@ -65,8 +65,8 @@ export function TimeBlock({ block, onEdit, onDelete, isEditable, hourHeight }: T
   const startMinutes = timeToMinutes(block.start) - 480;
   const duration = timeToMinutes(block.end) - timeToMinutes(block.start);
   const top = (startMinutes / 60) * hourHeight;
-  // Height: strictly time-proportional but min 44px so content is always readable
-  const timeHeight = Math.max((duration / 60) * hourHeight - 4, 44);
+  // Height is strictly time-proportional with a small gap (4px) between adjacent blocks
+  const timeHeight = Math.max((duration / 60) * hourHeight - 4, 20);
 
   const colorKey = CATEGORY_COLOR_MAP[block.category as BlockCategory] || "bg-slate-400";
   const theme = CATEGORY_THEME[colorKey] || CATEGORY_THEME["bg-slate-400"];
@@ -96,23 +96,22 @@ export function TimeBlock({ block, onEdit, onDelete, isEditable, hourHeight }: T
         {/* Accent bar */}
         <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${theme.bar}`} />
 
-        <div className="pl-3 pr-2 py-1 flex flex-col">
+        <div className="pl-3 pr-2 py-1.5 flex flex-col overflow-hidden">
           <div className="flex items-start gap-1.5 min-w-0">
             {/* Category icon badge */}
-            <span className={`flex-shrink-0 flex items-center justify-center w-4 h-4 rounded ${theme.badge} border mt-0.5`}>
+            <span className={`flex-shrink-0 flex items-center justify-center w-5 h-5 rounded ${theme.badge} border mt-0.5`}>
               <CategoryIcon category={block.category as BlockCategory} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className={`text-[10px] font-semibold ${theme.label} leading-none`}>
-                {block.start}–{block.end}
-                <span className="ml-1 font-normal text-slate-400">({formatDuration(block.start, block.end)})</span>
+              <p className={`text-xs font-bold ${theme.label} leading-none whitespace-nowrap`}>
+                {block.start} – {block.end}
               </p>
-              <p className="text-xs font-bold text-slate-800 leading-snug mt-0.5">{block.task}</p>
-              {block.description && (
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{block.description}</p>
+              <p className="text-sm font-bold text-slate-800 leading-snug mt-0.5 truncate">{block.task}</p>
+              {timeHeight >= 55 && block.description && (
+                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{block.description}</p>
               )}
-              {block.learning && (
-                <p className={`text-[11px] mt-1 italic border-t ${theme.border} pt-1 ${theme.label} opacity-80`}>
+              {timeHeight >= 90 && block.learning && (
+                <p className={`text-xs mt-1 italic border-t ${theme.border} pt-1 ${theme.label} opacity-80 line-clamp-2`}>
                   <span className="not-italic font-semibold">Learning:</span> {block.learning}
                 </p>
               )}

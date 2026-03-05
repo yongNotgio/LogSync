@@ -30,7 +30,7 @@ export function History() {
       const items = listRef.current.querySelectorAll(".journal-row");
       animate(items, {
         translateX: [-24, 0],
-        opacity: [0, 1],
+        opacity: [1, 1],
         duration: 500,
         ease: "outExpo",
         delay: stagger(60, { start: 50 }),
@@ -120,7 +120,7 @@ export function History() {
             <Link
               key={journal._id}
               to={`/journal/${journal.date}`}
-              className="journal-row opacity-0 flex items-start justify-between rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/20 p-5 hover:shadow-md hover:border-sky-200 hover:scale-[1.01] transition-all duration-200 group"
+              className="journal-row opacity-100 flex items-start justify-between rounded-2xl bg-white border border-slate-200 shadow-md shadow-slate-200/70 p-5 hover:shadow-lg hover:border-sky-200 hover:scale-[1.01] transition-all duration-200 group"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">

@@ -134,8 +134,8 @@ export function Layout() {
       <footer className="border-t border-slate-200 bg-white py-5">
         <div className="mx-auto max-w-7xl px-6 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <img src={logoImg} alt="LogSync" className="w-5 h-5 rounded-md object-contain" />
-            <span className="font-semibold text-slate-600">LogSync AI</span>
+            <img src={logoImg} alt="LogSync" className="w-9 h-9 rounded-md object-contain" />
+            <span className="font-semibold text-slate-600">LogSync AI</span> <span>@lansmasigon & @yongNotgio</span>
           </div>
           <p>Automate your internship journal — powered by Gemini AI &amp; GitHub.</p>
         </div>
