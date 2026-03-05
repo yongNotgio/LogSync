@@ -677,7 +677,7 @@ export function JournalPage() {
           )}
 
           {/* Empty state — not yet fetched */}
-          {commits === undefined && (
+          {commits == null && (
             <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-10 sm:p-16 text-center">
               <div className="flex justify-center mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -699,7 +699,7 @@ export function JournalPage() {
           )}
 
           {/* Empty state — fetched but no commits found */}
-          {commits !== undefined && commits.length === 0 && (
+          {commits != null && commits.length === 0 && (
             <div className="rounded-2xl bg-white border border-sky-100 shadow-sm shadow-sky-100/30 p-10 sm:p-16 text-center">
               <div className="flex justify-center mb-5">
                 <IconFileText />
