@@ -108,21 +108,20 @@ export const getCommits = query({
   },
 });
 
-interface GitHubRepo {
-  name: string;
-  full_name: string;
-  description?: string | null;
-}
-
-interface GitHubCommit {
-  sha: string;
-  commit: {
-    message: string;
-    author: { date: string };
+interface GitHubEvent {
+  type: string;
+  repo: { name: string }; // "owner/repo" format
+  payload: {
+    commits?: Array<{ sha: string; message: string }>;
   };
+  created_at: string;
 }
 
 interface GitHubCommitDetail {
+  commit: {
+    message: string;
+    author: { date: string; name: string; email: string };
+  };
   stats?: {
     additions: number;
     deletions: number;
@@ -164,98 +163,112 @@ export const fetchCommitsForDate = action({
     if (!user) throw new Error("User not found");
     console.log("Got user:", user.username);
 
-    // Calculate date range with ±14h buffer to cover all UTC offsets.
-    // The `date` string comes from the user's local date picker (YYYY-MM-DD),
-    // but GitHub's since/until params are UTC. Without the buffer, commits made
-    // outside UTC business hours are missed for users in non-UTC timezones.
+    // Use the GitHub Events API — captures push events across ALL repos AND ALL branches
+    // (unlike Search API which only indexes the default branch).
+    // Authenticated requests return both public and private repo events.
+    const targetMs = new Date(`${date}T00:00:00Z`).getTime();
+    const windowMs = 3 * 24 * 60 * 60 * 1000; // ±3 days pre-filter on event time
+
+    const allEvents: GitHubEvent[] = [];
+    for (let page = 1; page <= 3; page++) {
+      const eventsResponse = await fetch(
+        `https://api.github.com/users/${encodeURIComponent(user.username)}/events?per_page=100&page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        }
+      );
+
+      if (!eventsResponse.ok) {
+        console.error("GitHub events error:", eventsResponse.status);
+        break;
+      }
+
+      const events = (await eventsResponse.json()) as GitHubEvent[];
+      if (events.length === 0) break;
+
+      // GitHub returns events newest-first; stop paging once events are older than our window
+      const oldestInPage = new Date(events[events.length - 1].created_at).getTime();
+      const relevant = events.filter((e) => {
+        const t = new Date(e.created_at).getTime();
+        return Math.abs(t - targetMs) <= windowMs;
+      });
+      allEvents.push(...relevant);
+      if (oldestInPage < targetMs - windowMs) break;
+    }
+
+    console.log(`Found ${allEvents.length} events in window`);
+
+    // Collect unique commit SHAs from PushEvents
+    const commitRefs = new Map<string, string>(); // sha → repoFullName
+    for (const event of allEvents) {
+      if (event.type !== "PushEvent") continue;
+      for (const c of event.payload.commits || []) {
+        if (!commitRefs.has(c.sha)) {
+          commitRefs.set(c.sha, event.repo.name);
+        }
+      }
+    }
+
+    console.log(`Found ${commitRefs.size} unique commit SHAs`);
+
+    // UTC range for the target date with ±14h buffer to cover all timezones
     const startDate = new Date(`${date}T00:00:00Z`);
     startDate.setUTCHours(startDate.getUTCHours() - 14);
     const endDate = new Date(`${date}T23:59:59Z`);
     endDate.setUTCHours(endDate.getUTCHours() + 14);
 
-    // Fetch user's repositories
-    console.log("Fetching GitHub repos...");
-    const reposResponse = await fetch(
-      "https://api.github.com/user/repos?type=all&per_page=100&sort=pushed",
-      {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          Accept: "application/vnd.github.v3+json",
-        },
-      }
-    );
-
-    if (!reposResponse.ok) {
-      const errorText = await reposResponse.text();
-      console.error("GitHub repos error:", reposResponse.status, errorText);
-      throw new Error(`Failed to fetch repositories: ${reposResponse.status}`);
-    }
-
-    const repos = (await reposResponse.json()) as GitHubRepo[];
-    console.log("Got repos:", repos.length);
-
-    // Fetch commits from each repo
+    // Fetch commit details and filter by author date
     const allCommits: CachedCommit[] = [];
 
-    for (const repo of repos.slice(0, 20)) {
-      // Limit to 20 repos
+    for (const [sha, repoFullName] of commitRefs) {
       try {
-        const commitsUrl = `https://api.github.com/repos/${repo.full_name}/commits?author=${user.username}&since=${startDate.toISOString()}&until=${endDate.toISOString()}&per_page=100`;
+        const detailResponse = await fetch(
+          `https://api.github.com/repos/${repoFullName}/commits/${sha}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          }
+        );
 
-        const commitsResponse = await fetch(commitsUrl, {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            Accept: "application/vnd.github.v3+json",
+        if (!detailResponse.ok) continue;
+
+        const detail = (await detailResponse.json()) as GitHubCommitDetail;
+
+        // Filter: only include commits whose author date falls on the target day
+        const authorDate = new Date(detail.commit.author.date);
+        if (authorDate < startDate || authorDate > endDate) continue;
+
+        const repoParts = repoFullName.split("/");
+        const repoName = repoParts[repoParts.length - 1];
+
+        allCommits.push({
+          sha,
+          message: detail.commit.message,
+          timestamp: detail.commit.author.date,
+          author: user.username,
+          additions: detail.stats?.additions || 0,
+          deletions: detail.stats?.deletions || 0,
+          changedFiles: detail.files?.length || 0,
+          patches: detail.files?.slice(0, 5).map((f) => ({
+            filename: f.filename,
+            status: f.status,
+            patch: f.patch?.slice(0, 500),
+          })),
+          repo: {
+            name: repoName,
+            fullName: repoFullName,
+            description: undefined,
           },
         });
-
-        if (!commitsResponse.ok) continue;
-
-        const commits = (await commitsResponse.json()) as GitHubCommit[];
-
-        // Fetch details for each commit (to get diff stats)
-        for (const commit of commits.slice(0, 10)) {
-          // Limit per repo
-          try {
-            const detailResponse = await fetch(
-              `https://api.github.com/repos/${repo.full_name}/commits/${commit.sha}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${user.token}`,
-                  Accept: "application/vnd.github.v3+json",
-                },
-              }
-            );
-
-            if (!detailResponse.ok) continue;
-
-            const detail = (await detailResponse.json()) as GitHubCommitDetail;
-
-            allCommits.push({
-              sha: commit.sha,
-              message: commit.commit.message,
-              timestamp: commit.commit.author.date,
-              author: user.username,
-              additions: detail.stats?.additions || 0,
-              deletions: detail.stats?.deletions || 0,
-              changedFiles: detail.files?.length || 0,
-              patches: detail.files?.slice(0, 5).map((f) => ({
-                filename: f.filename,
-                status: f.status,
-                patch: f.patch?.slice(0, 500), // Truncate patch
-              })),
-              repo: {
-                name: repo.name,
-                fullName: repo.full_name,
-                description: repo.description || undefined,
-              },
-            });
-          } catch {
-            // Skip commits that fail to fetch
-          }
-        }
       } catch {
-        // Skip repos that fail to fetch
+        // Skip commits that fail detail fetch
       }
     }
 
