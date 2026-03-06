@@ -40,7 +40,7 @@ export function Dashboard() {
   const cachedCommits = useQuery(
     api.commits.getCommits,
     userId ? { userId, date: selectedDate } : "skip"
-  ) as FetchedCommit[] | undefined;
+  ) as FetchedCommit[] | null | undefined;
 
   const journals = useQuery(
     api.journals.listJournals,

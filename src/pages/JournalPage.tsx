@@ -305,7 +305,7 @@ export function JournalPage() {
   const commits = useQuery(
     api.commits.getCommits,
     userId ? { userId, date } : "skip"
-  ) as CachedCommit[] | undefined;
+  ) as CachedCommit[] | null | undefined;
 
   const fetchCommits = useAction(api.commits.fetchCommitsForDate);
   const generateJournal = useAction(api.ai.generateJournal);
@@ -649,6 +649,7 @@ export function JournalPage() {
               <div className="divide-y divide-sky-50 max-h-60 sm:max-h-72 overflow-y-auto pr-1">
                 {commits.map((commit) => {
                     const [title, ...rest] = commit.message.split("\n");
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const description = rest.join("\n").trim();
                     const t = new Date(commit.timestamp);
                     const timeStr = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

@@ -103,7 +103,8 @@ export const getCommits = query({
       return cache.commits;
     }
 
-    return [];
+    // Return null (not []) so UI can distinguish "never fetched" from "fetched but empty"
+    return null;
   },
 });
 
@@ -145,12 +146,6 @@ interface CachedCommit {
   repo: { name: string; fullName: string; description?: string };
 }
 
-interface CacheResult {
-  commits: CachedCommit[];
-  cachedAt: number;
-  expiresAt: number;
-}
-
 // Fetch commits from GitHub
 export const fetchCommitsForDate = action({
   args: {
@@ -159,17 +154,9 @@ export const fetchCommitsForDate = action({
   },
   handler: async (ctx, { userId, date }): Promise<CachedCommit[]> => {
     console.log("fetchCommitsForDate called:", { userId, date });
-    
-    // Check cache first
-    const cached = (await ctx.runQuery(internal.commits.getCachedCommits, {
-      userId,
-      date,
-    })) as CacheResult | null;
 
-    if (cached) {
-      console.log("Returning cached commits:", cached.commits.length);
-      return cached.commits;
-    }
+    // Always fetch fresh from GitHub (don't skip based on cache —
+    // the user clicked "Fetch Commits" intentionally)
 
     // Get user with token
     console.log("Fetching user with token...");
@@ -177,9 +164,14 @@ export const fetchCommitsForDate = action({
     if (!user) throw new Error("User not found");
     console.log("Got user:", user.username);
 
-    // Calculate date range
+    // Calculate date range with ±14h buffer to cover all UTC offsets.
+    // The `date` string comes from the user's local date picker (YYYY-MM-DD),
+    // but GitHub's since/until params are UTC. Without the buffer, commits made
+    // outside UTC business hours are missed for users in non-UTC timezones.
     const startDate = new Date(`${date}T00:00:00Z`);
+    startDate.setUTCHours(startDate.getUTCHours() - 14);
     const endDate = new Date(`${date}T23:59:59Z`);
+    endDate.setUTCHours(endDate.getUTCHours() + 14);
 
     // Fetch user's repositories
     console.log("Fetching GitHub repos...");
