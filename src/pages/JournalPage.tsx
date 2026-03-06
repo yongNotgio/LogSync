@@ -334,7 +334,7 @@ export function JournalPage() {
     setIsFetching(true);
     setError(null);
     try {
-      await fetchCommits({ userId, date });
+      await fetchCommits({ userId, date, timezoneOffsetMinutes: new Date().getTimezoneOffset() });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch commits");
     } finally {
@@ -347,7 +347,7 @@ export function JournalPage() {
     setIsGenerating(true);
     setError(null);
     try {
-      await fetchCommits({ userId, date });
+      await fetchCommits({ userId, date, timezoneOffsetMinutes: new Date().getTimezoneOffset() });
       const result = await generateJournal({ userId, date });
       const blocks: WorkBlock[] = result.blocks.map((b: GeneratedBlock) => {
         const source: BlockSource =

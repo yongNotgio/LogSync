@@ -81,7 +81,7 @@ export function Dashboard() {
     setIsFetching(true);
     setFetchError(null);
     try {
-      await fetchCommits({ userId, date: selectedDate });
+      await fetchCommits({ userId, date: selectedDate, timezoneOffsetMinutes: new Date().getTimezoneOffset() });
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : "Failed to fetch commits");
     } finally {

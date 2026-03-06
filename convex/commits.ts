@@ -156,9 +156,10 @@ export const fetchCommitsForDate = action({
   args: {
     userId: v.id("users"),
     date: v.string(), // YYYY-MM-DD
+    timezoneOffsetMinutes: v.number(), // from new Date().getTimezoneOffset() (e.g. -480 for UTC+8)
   },
-  handler: async (ctx, { userId, date }): Promise<CachedCommit[]> => {
-    console.log("fetchCommitsForDate called:", { userId, date });
+  handler: async (ctx, { userId, date, timezoneOffsetMinutes }): Promise<CachedCommit[]> => {
+    console.log("fetchCommitsForDate called:", { userId, date, timezoneOffsetMinutes });
 
     // Always fetch fresh from GitHub (user clicked "Fetch Commits" intentionally)
 
@@ -172,14 +173,19 @@ export const fetchCommitsForDate = action({
       "X-GitHub-Api-Version": "2022-11-28",
     };
 
-    // ── Date range for PH timezone (UTC+8) ──
-    // User picks "2026-03-01" in PH local time.
-    // PH midnight = 2026-02-28T16:00:00Z, PH 23:59 = 2026-03-01T15:59:59Z.
-    // Use ±16h buffer to cover UTC-12 through UTC+14 (all world timezones).
+    // ── Exact UTC window for the target local date ──
+    // getTimezoneOffset() returns minutes BEHIND UTC, so UTC+8 → -480.
+    // Local midnight in UTC = midnight + offset (negate because getTimezoneOffset is inverted).
+    // Example: "2026-03-01" in PH (UTC+8, offset=-480):
+    //   since = 2026-03-01T00:00:00Z + 480min = 2026-02-28T16:00:00Z
+    //   until = 2026-03-02T00:00:00Z + 480min = 2026-03-01T16:00:00Z
     const since = new Date(`${date}T00:00:00Z`);
-    since.setUTCHours(since.getUTCHours() - 16);
-    const until = new Date(`${date}T23:59:59Z`);
-    until.setUTCHours(until.getUTCHours() + 16);
+    since.setUTCMinutes(since.getUTCMinutes() + timezoneOffsetMinutes);
+    const until = new Date(`${date}T00:00:00Z`);
+    until.setUTCDate(until.getUTCDate() + 1);
+    until.setUTCMinutes(until.getUTCMinutes() + timezoneOffsetMinutes);
+
+    console.log(`UTC window: ${since.toISOString()} → ${until.toISOString()}`);
 
     // ── Fetch ALL user repos (paginated) ──
     const allRepos: GitHubRepo[] = [];
@@ -200,7 +206,6 @@ export const fetchCommitsForDate = action({
     console.log(`Found ${allRepos.length} total repos`);
 
     // ── Skip repos that haven't been pushed near the target date ──
-    // If a repo's last push is before (target - 2 days), it can't have commits for this date.
     const cutoff = since.getTime() - 2 * 24 * 60 * 60 * 1000;
     const activeRepos = allRepos.filter(
       (r) => new Date(r.pushed_at).getTime() >= cutoff
@@ -236,6 +241,11 @@ export const fetchCommitsForDate = action({
             if (!detailResponse.ok) continue;
 
             const detail = (await detailResponse.json()) as GitHubCommitDetail;
+
+            // Post-filter: only keep commits whose author date falls on the target local date.
+            // Convert the commit's UTC timestamp to the user's local date string and compare.
+            const commitMs = new Date(detail.commit.author.date).getTime();
+            if (commitMs < since.getTime() || commitMs >= until.getTime()) continue;
 
             allCommits.push({
               sha: commit.sha,
