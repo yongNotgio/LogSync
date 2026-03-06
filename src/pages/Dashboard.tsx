@@ -226,7 +226,7 @@ export function Dashboard() {
                 )}
               </div>
 
-              {cachedCommits === undefined ? (
+              {!cachedCommits ? (
                 <div className="py-10 sm:py-14 px-4 text-center">
                   <div className="flex justify-center mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -308,7 +308,7 @@ export function Dashboard() {
             {selectedJournal ? (
               <div className="space-y-2">
                 {[
-                  { label: "Time Blocks", value: selectedJournal.blocks.length },
+                  { label: "Time Blocks", value: selectedJournal.blocks?.length ?? 0 },
                   { label: "Commits", value: selectedJournal.totalCommits },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-center py-1.5 border-b border-slate-100">
@@ -366,7 +366,7 @@ export function Dashboard() {
               <h2 className="text-sm font-bold text-slate-700">Recent Journals</h2>
               <Link to="/history" className="text-xs text-sky-500 hover:text-indigo-600 font-semibold transition-colors">View all →</Link>
             </div>
-            {journals === undefined ? (
+            {!journals ? (
               <div className="p-5">
                 <p className="text-sm text-slate-400 animate-pulse">Loading…</p>
               </div>
@@ -387,7 +387,7 @@ export function Dashboard() {
                         {formatShortDate(journal.date)}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        {journal.blocks.length} blocks · {journal.totalCommits} commits
+                        {journal.blocks?.length ?? 0} blocks · {journal.totalCommits ?? 0} commits
                       </p>
                     </div>
                     {journal.status === "finalized" ? (

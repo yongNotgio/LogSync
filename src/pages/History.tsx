@@ -112,7 +112,7 @@ export function History() {
         </div>
       </div>
 
-      {journals === undefined ? (
+      {!journals ? (
         <LoadingScreen message="Loading journals..." />
       ) : filteredJournals?.length === 0 ? (
         <div className="rounded-2xl bg-white border border-sky-100 shadow-sm p-16 text-center">
@@ -148,7 +148,7 @@ export function History() {
                   )}
                 </div>
                 <p className="text-xs text-slate-400 mb-2 sm:mb-3 flex items-center gap-1.5 flex-wrap">
-                  <span>{journal.blocks.length} blocks</span>
+                  <span>{journal.blocks?.length ?? 0} blocks</span>
                   <span>·</span>
                   <span>{journal.totalCommits} commits</span>
                   {journal.totalLinesChanged > 0 && (
@@ -160,7 +160,7 @@ export function History() {
                 </p>
                 {/* Block preview tags */}
                 <div className="flex flex-wrap gap-1.5">
-                  {(journal.blocks as WorkBlock[]).slice(0, 3).map((block: WorkBlock) => (
+                  {(journal.blocks as WorkBlock[])?.slice(0, 3).map((block: WorkBlock) => (
                     <span
                       key={block.id}
                       className="text-xs px-2 sm:px-2.5 py-1 bg-sky-50 border border-sky-100 text-sky-600 rounded-lg font-medium truncate max-w-[120px] sm:max-w-[160px]"
@@ -168,9 +168,9 @@ export function History() {
                       {block.task}
                     </span>
                   ))}
-                  {journal.blocks.length > 3 && (
+                  {(journal.blocks?.length ?? 0) > 3 && (
                     <span className="text-xs px-2 sm:px-2.5 py-1 bg-slate-50 border border-slate-100 text-slate-400 rounded-lg">
-                      +{journal.blocks.length - 3} more
+                      +{(journal.blocks?.length ?? 0) - 3} more
                     </span>
                   )}
                 </div>

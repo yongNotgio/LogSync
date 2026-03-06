@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import "./index.css";
 import App from "./App.tsx";
 
@@ -10,12 +11,14 @@ const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ConvexProvider client={convex}>
-      <AuthProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </AuthProvider>
-    </ConvexProvider>
+    <ErrorBoundary>
+      <ConvexProvider client={convex}>
+        <AuthProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </AuthProvider>
+      </ConvexProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
