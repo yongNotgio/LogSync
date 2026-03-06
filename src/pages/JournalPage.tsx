@@ -532,6 +532,13 @@ export function JournalPage() {
         {hasBlocks && !isFinalized && (
           <>
             <button
+              onClick={handleFetchCommits}
+              disabled={isFetching}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-600 px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 disabled:opacity-50 transition-all"
+            >
+              {isFetching ? <><LoadingInline /> Fetching…</> : <><IconDownload /> Fetch Commits</>}
+            </button>
+            <button
               onClick={handleGenerate}
               disabled={isGenerating}
               className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-white text-sky-700 px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold shadow-sm hover:bg-sky-50 disabled:opacity-50 transition-all"
