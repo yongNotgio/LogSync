@@ -102,7 +102,7 @@ export function Dashboard() {
           <div>
             <p className="text-[11px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Portal › Dashboard</p>
             <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800">
-              Good morning,{" "}
+              {(() => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; })()},{" "}
               <span className="bg-gradient-to-r from-sky-500 to-indigo-600 bg-clip-text text-transparent">{user?.username}</span>
             </h1>
           </div>
