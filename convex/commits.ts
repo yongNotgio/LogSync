@@ -108,13 +108,19 @@ export const getCommits = query({
   },
 });
 
-interface GitHubEvent {
-  type: string;
-  repo: { name: string }; // "owner/repo" format
-  payload: {
-    commits?: Array<{ sha: string; message: string }>;
+interface GitHubRepo {
+  name: string;
+  full_name: string;
+  description: string | null;
+  pushed_at: string;
+}
+
+interface GitHubCommitListItem {
+  sha: string;
+  commit: {
+    message: string;
+    author: { date: string };
   };
-  created_at: string;
 }
 
 interface GitHubCommitDetail {
@@ -154,123 +160,117 @@ export const fetchCommitsForDate = action({
   handler: async (ctx, { userId, date }): Promise<CachedCommit[]> => {
     console.log("fetchCommitsForDate called:", { userId, date });
 
-    // Always fetch fresh from GitHub (don't skip based on cache —
-    // the user clicked "Fetch Commits" intentionally)
+    // Always fetch fresh from GitHub (user clicked "Fetch Commits" intentionally)
 
-    // Get user with token
-    console.log("Fetching user with token...");
     const user = await ctx.runQuery(internal.users.getUserWithToken, { userId });
     if (!user) throw new Error("User not found");
     console.log("Got user:", user.username);
 
-    // Use the GitHub Events API — captures push events across ALL repos AND ALL branches
-    // (unlike Search API which only indexes the default branch).
-    // Authenticated requests return both public and private repo events.
-    const targetMs = new Date(`${date}T00:00:00Z`).getTime();
-    const windowMs = 3 * 24 * 60 * 60 * 1000; // ±3 days pre-filter on event time
+    const headers = {
+      Authorization: `Bearer ${user.token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
 
-    const allEvents: GitHubEvent[] = [];
-    for (let page = 1; page <= 3; page++) {
-      const eventsResponse = await fetch(
-        `https://api.github.com/users/${encodeURIComponent(user.username)}/events?per_page=100&page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            Accept: "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        }
+    // ── Date range for PH timezone (UTC+8) ──
+    // User picks "2026-03-01" in PH local time.
+    // PH midnight = 2026-02-28T16:00:00Z, PH 23:59 = 2026-03-01T15:59:59Z.
+    // Use ±16h buffer to cover UTC-12 through UTC+14 (all world timezones).
+    const since = new Date(`${date}T00:00:00Z`);
+    since.setUTCHours(since.getUTCHours() - 16);
+    const until = new Date(`${date}T23:59:59Z`);
+    until.setUTCHours(until.getUTCHours() + 16);
+
+    // ── Fetch ALL user repos (paginated) ──
+    const allRepos: GitHubRepo[] = [];
+    for (let page = 1; page <= 10; page++) {
+      const response = await fetch(
+        `https://api.github.com/user/repos?type=all&per_page=100&sort=pushed&page=${page}`,
+        { headers }
       );
-
-      if (!eventsResponse.ok) {
-        console.error("GitHub events error:", eventsResponse.status);
+      if (!response.ok) {
+        console.error(`Repos page ${page} error:`, response.status);
         break;
       }
-
-      const events = (await eventsResponse.json()) as GitHubEvent[];
-      if (events.length === 0) break;
-
-      // GitHub returns events newest-first; stop paging once events are older than our window
-      const oldestInPage = new Date(events[events.length - 1].created_at).getTime();
-      const relevant = events.filter((e) => {
-        const t = new Date(e.created_at).getTime();
-        return Math.abs(t - targetMs) <= windowMs;
-      });
-      allEvents.push(...relevant);
-      if (oldestInPage < targetMs - windowMs) break;
+      const pageRepos = (await response.json()) as GitHubRepo[];
+      if (pageRepos.length === 0) break;
+      allRepos.push(...pageRepos);
     }
 
-    console.log(`Found ${allEvents.length} events in window`);
+    console.log(`Found ${allRepos.length} total repos`);
 
-    // Collect unique commit SHAs from PushEvents
-    const commitRefs = new Map<string, string>(); // sha → repoFullName
-    for (const event of allEvents) {
-      if (event.type !== "PushEvent") continue;
-      for (const c of event.payload.commits || []) {
-        if (!commitRefs.has(c.sha)) {
-          commitRefs.set(c.sha, event.repo.name);
-        }
-      }
-    }
+    // ── Skip repos that haven't been pushed near the target date ──
+    // If a repo's last push is before (target - 2 days), it can't have commits for this date.
+    const cutoff = since.getTime() - 2 * 24 * 60 * 60 * 1000;
+    const activeRepos = allRepos.filter(
+      (r) => new Date(r.pushed_at).getTime() >= cutoff
+    );
+    console.log(`${activeRepos.length} repos with recent push activity`);
 
-    console.log(`Found ${commitRefs.size} unique commit SHAs`);
-
-    // UTC range for the target date with ±14h buffer to cover all timezones
-    const startDate = new Date(`${date}T00:00:00Z`);
-    startDate.setUTCHours(startDate.getUTCHours() - 14);
-    const endDate = new Date(`${date}T23:59:59Z`);
-    endDate.setUTCHours(endDate.getUTCHours() + 14);
-
-    // Fetch commit details and filter by author date
+    // ── Query commits from each active repo ──
+    const seenShas = new Set<string>();
     const allCommits: CachedCommit[] = [];
 
-    for (const [sha, repoFullName] of commitRefs) {
+    for (const repo of activeRepos) {
       try {
-        const detailResponse = await fetch(
-          `https://api.github.com/repos/${repoFullName}/commits/${sha}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-              Accept: "application/vnd.github+json",
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
+        const commitsUrl = `https://api.github.com/repos/${repo.full_name}/commits?author=${encodeURIComponent(user.username)}&since=${since.toISOString()}&until=${until.toISOString()}&per_page=100`;
+
+        const response = await fetch(commitsUrl, { headers });
+        if (!response.ok) continue;
+
+        const commits = (await response.json()) as GitHubCommitListItem[];
+        if (commits.length === 0) continue;
+
+        console.log(`${repo.full_name}: ${commits.length} commits`);
+
+        // Fetch full details (stats, files) for each commit
+        for (const commit of commits) {
+          if (seenShas.has(commit.sha)) continue;
+          seenShas.add(commit.sha);
+
+          try {
+            const detailResponse = await fetch(
+              `https://api.github.com/repos/${repo.full_name}/commits/${commit.sha}`,
+              { headers }
+            );
+            if (!detailResponse.ok) continue;
+
+            const detail = (await detailResponse.json()) as GitHubCommitDetail;
+
+            allCommits.push({
+              sha: commit.sha,
+              message: detail.commit.message,
+              timestamp: detail.commit.author.date,
+              author: user.username,
+              additions: detail.stats?.additions || 0,
+              deletions: detail.stats?.deletions || 0,
+              changedFiles: detail.files?.length || 0,
+              patches: detail.files?.slice(0, 5).map((f) => ({
+                filename: f.filename,
+                status: f.status,
+                patch: f.patch?.slice(0, 500),
+              })),
+              repo: {
+                name: repo.name,
+                fullName: repo.full_name,
+                description: repo.description || undefined,
+              },
+            });
+          } catch {
+            // Skip individual commit detail failures
           }
-        );
-
-        if (!detailResponse.ok) continue;
-
-        const detail = (await detailResponse.json()) as GitHubCommitDetail;
-
-        // Filter: only include commits whose author date falls on the target day
-        const authorDate = new Date(detail.commit.author.date);
-        if (authorDate < startDate || authorDate > endDate) continue;
-
-        const repoParts = repoFullName.split("/");
-        const repoName = repoParts[repoParts.length - 1];
-
-        allCommits.push({
-          sha,
-          message: detail.commit.message,
-          timestamp: detail.commit.author.date,
-          author: user.username,
-          additions: detail.stats?.additions || 0,
-          deletions: detail.stats?.deletions || 0,
-          changedFiles: detail.files?.length || 0,
-          patches: detail.files?.slice(0, 5).map((f) => ({
-            filename: f.filename,
-            status: f.status,
-            patch: f.patch?.slice(0, 500),
-          })),
-          repo: {
-            name: repoName,
-            fullName: repoFullName,
-            description: undefined,
-          },
-        });
+        }
       } catch {
-        // Skip commits that fail detail fetch
+        // Skip repos that fail
       }
     }
+
+    console.log(`Total commits found for ${date}: ${allCommits.length}`);
+
+    // Sort newest first
+    allCommits.sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
     // Cache the commits
     await ctx.runMutation(internal.commits.cacheCommits, {
